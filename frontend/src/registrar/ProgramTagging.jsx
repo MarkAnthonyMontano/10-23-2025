@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
 
 const ProgramTagging = () => {
   const [progTag, setProgTag] = useState({
@@ -15,19 +15,20 @@ const ProgramTagging = () => {
   const [semesterList, setSemesterList] = useState([]);
   const [curriculumList, setCurriculumList] = useState([]);
   const [taggedPrograms, setTaggedPrograms] = useState([]);
+  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
     fetchCourse();
     fetchYearLevel();
     fetchSemester();
     fetchCurriculum();
-    fetchTaggedPrograms(); // Fetch the tagged programs to display
+    fetchTaggedPrograms();
   }, []);
 
   const fetchYearLevel = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/get_year_level");
-      setYearlevelList(response.data);
+      const res = await axios.get("http://localhost:5000/get_year_level");
+      setYearlevelList(res.data);
     } catch (err) {
       console.log(err);
     }
@@ -35,8 +36,8 @@ const ProgramTagging = () => {
 
   const fetchSemester = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/get_semester");
-      setSemesterList(response.data);
+      const res = await axios.get("http://localhost:5000/get_semester");
+      setSemesterList(res.data);
     } catch (err) {
       console.log(err);
     }
@@ -44,8 +45,8 @@ const ProgramTagging = () => {
 
   const fetchCurriculum = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/get_curriculum");
-      setCurriculumList(response.data);
+      const res = await axios.get("http://localhost:5000/get_curriculum");
+      setCurriculumList(res.data);
     } catch (err) {
       console.log(err);
     }
@@ -53,8 +54,8 @@ const ProgramTagging = () => {
 
   const fetchCourse = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/course_list");
-      setCourseList(response.data);
+      const res = await axios.get("http://localhost:5000/course_list");
+      setCourseList(res.data);
     } catch (err) {
       console.log(err);
     }
@@ -62,8 +63,8 @@ const ProgramTagging = () => {
 
   const fetchTaggedPrograms = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/prgram_tagging_list");
-      setTaggedPrograms(response.data);
+      const res = await axios.get("http://localhost:5000/prgram_tagging_list");
+      setTaggedPrograms(res.data);
     } catch (err) {
       console.log(err);
     }
@@ -79,84 +80,97 @@ const ProgramTagging = () => {
 
   const handleInsertingProgTag = async () => {
     const { curriculum_id, year_level_id, semester_id, course_id } = progTag;
-
     if (!curriculum_id || !year_level_id || !semester_id || !course_id) {
       alert("Please fill all fields");
       return;
     }
 
     try {
-      await axios.post("http://localhost:5000/program_tagging", progTag);
-      fetchTaggedPrograms(); // Refresh the tagged programs list after successful insertion
+      if (editingId) {
+        // 🟡 Update existing record
+        await axios.put(`http://localhost:5000/program_tagging/${editingId}`, progTag);
+        alert("Program tag updated successfully!");
+      } else {
+        // 🟢 Insert new record
+        await axios.post("http://localhost:5000/program_tagging", progTag);
+        alert("Program tag inserted successfully!");
+      }
+
+      fetchTaggedPrograms();
       setProgTag({
         curriculum_id: "",
         year_level_id: "",
         semester_id: "",
         course_id: "",
       });
+      setEditingId(null);
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      alert("Error saving data.");
     }
   };
 
-  // 🔒 Disable right-click
-  document.addEventListener('contextmenu', (e) => e.preventDefault());
+  const handleEdit = (program) => {
+    setEditingId(program.program_tagging_id);
+    setProgTag({
+      curriculum_id: program.curriculum_id,
+      year_level_id: program.year_level_id,
+      semester_id: program.semester_id,
+      course_id: program.course_id,
+    });
+  };
 
-  // 🔒 Block DevTools shortcuts + Ctrl+P silently
-  document.addEventListener('keydown', (e) => {
-    const isBlockedKey =
-      e.key === 'F12' || // DevTools
-      e.key === 'F11' || // Fullscreen
-      (e.ctrlKey && e.shiftKey && (e.key.toLowerCase() === 'i' || e.key.toLowerCase() === 'j')) || // Ctrl+Shift+I/J
-      (e.ctrlKey && e.key.toLowerCase() === 'u') || // Ctrl+U (View Source)
-      (e.ctrlKey && e.key.toLowerCase() === 'p');   // Ctrl+P (Print)
 
-    if (isBlockedKey) {
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this tag?")) return;
+
+    try {
+      await axios.delete(`http://localhost:5000/program_tagging/${id}`);
+      alert("Program tag deleted successfully!");
+      fetchTaggedPrograms();
+    } catch (err) {
+      console.error(err);
+      alert("Error deleting program tag.");
+    }
+  };
+
+  // 🔒 Disable right-click & blocked keys
+  document.addEventListener("contextmenu", (e) => e.preventDefault());
+  document.addEventListener("keydown", (e) => {
+    const blocked =
+      e.key === "F12" ||
+      e.key === "F11" ||
+      (e.ctrlKey && e.shiftKey && ["i", "j"].includes(e.key.toLowerCase())) ||
+      (e.ctrlKey && ["u", "p"].includes(e.key.toLowerCase()));
+    if (blocked) {
       e.preventDefault();
       e.stopPropagation();
     }
   });
 
-
-
   return (
-    <Box sx={{ height: "calc(100vh - 150px)", overflowY: "auto", paddingRight: 1, backgroundColor: "transparent" }}>
-
+    <Box sx={{ height: "calc(100vh - 150px)", overflowY: "auto", paddingRight: 1 }}>
       <Box
         sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
           mt: 2,
-
           mb: 2,
           px: 2,
         }}
       >
-        <Typography
-          variant="h4"
-          sx={{
-            fontWeight: 'bold',
-            color: 'maroon',
-            fontSize: '36px',
-          }}
-        >
+        <Typography variant="h4" sx={{ fontWeight: "bold", color: "maroon", fontSize: "36px" }}>
           PROGRAM AND COURSE MANAGEMENT
         </Typography>
-
-
-
-
       </Box>
-      <hr style={{ border: "1px solid #ccc", width: "100%" }} />
 
+      <hr style={{ border: "1px solid #ccc", width: "100%" }} />
       <br />
 
-
       <div style={styles.container}>
+        {/* Left: Form Section */}
         <div style={styles.formSection}>
-
           <div style={styles.formGroup}>
             <label style={styles.label}>Curriculum:</label>
             <select
@@ -168,7 +182,7 @@ const ProgramTagging = () => {
               <option value="">Choose Curriculum</option>
               {curriculumList.map((curriculum) => (
                 <option key={curriculum.curriculum_id} value={curriculum.curriculum_id}>
-                  {curriculum.year_description} - {curriculum.program_description} | {curriculum.curriculum_id}
+                  {curriculum.year_description} - {curriculum.program_description}
                 </option>
               ))}
             </select>
@@ -185,7 +199,7 @@ const ProgramTagging = () => {
               <option value="">Choose Course</option>
               {courseList.map((course) => (
                 <option key={course.course_id} value={course.course_id}>
-                  {course.course_code} - {course.course_description} | {course.course_id}
+                  {course.course_code} - {course.course_description}
                 </option>
               ))}
             </select>
@@ -225,146 +239,179 @@ const ProgramTagging = () => {
             </select>
           </div>
 
-          <button onClick={handleInsertingProgTag} style={styles.button}>
-            Insert Program Tag
-          </button>
+          <Button
+            onClick={handleInsertingProgTag}
+            variant="contained"
+            sx={{
+              backgroundColor: "maroon",
+              color: "white",
+              mt: 3,
+              width: "100%",
+              "&:hover": { backgroundColor: "#8b0000" },
+            }}
+          >
+            {editingId ? "Update Program Tag" : "Insert Program Tag"}
+          </Button>
         </div>
 
+        {/* Right: Tagged Programs */}
         <div style={styles.displaySection}>
-          <h3 style={{color: "maroon"}}>Tagged Programs</h3>
+          <h3 style={{ color: "maroon" }}>Tagged Programs</h3>
           <div style={styles.taggedProgramsContainer}>
             {taggedPrograms.length > 0 ? (
               <table style={styles.table}>
-                <thead>
+                <thead style={{ background: "#f1f1f1" }}>
                   <tr>
-                    <th>Curriculum</th>
-                    <th>Course</th>
-                    <th>Year Level</th>
-                    <th>Semester</th>
+                    <th style={styles.th}>Curriculum</th>
+                    <th style={styles.th}>Course</th>
+                    <th style={styles.th}>Year Level</th>
+                    <th style={styles.th}>Semester</th>
+                    <th style={styles.th}>Actions</th>
                   </tr>
                 </thead>
-                <tbody style={styles.tbody}>
-                  {taggedPrograms.map((program, index) => (
-                    <tr key={program.program_id || index}>
-                      <td>{program.curriculum_description}</td>
-                      <td>{program.course_description}</td>
-                      <td>{program.year_level_description}</td>
-                      <td>{program.semester_description}</td>
+                <tbody>
+                  {taggedPrograms.map((program) => (
+                    <tr key={program.program_tagging_id}>
+                      <td style={styles.td}>{program.curriculum_description}</td>
+                      <td style={styles.td}>{program.course_description}</td>
+                      <td style={styles.td}>{program.year_level_description}</td>
+                      <td style={styles.td}>{program.semester_description}</td>
+                      <td style={{ ...styles.td, whiteSpace: "nowrap" }}>
+                        <button
+                          onClick={() => handleEdit(program)}
+                          style={{
+                            background: "#FFD700",
+                            color: "black",
+                            border: "none",
+                            borderRadius: "5px",
+                            padding: "6px 10px",
+                            marginRight: "6px",
+                            cursor: "pointer",
+                            position: "relative",
+                            zIndex: 2,
+                            pointerEvents: "auto",
+                          }}
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(program.program_tagging_id)}
+                          style={{
+                            background: "darkred",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "5px",
+                            padding: "6px 10px",
+                            cursor: "pointer",
+                            position: "relative",
+                            zIndex: 2,
+                            pointerEvents: "auto",
+                          }}
+                        >
+                          🗑️ Delete
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
-
               </table>
             ) : (
               <p>No tagged programs available.</p>
             )}
           </div>
         </div>
+
+
       </div>
     </Box>
   );
 };
 
+// 💅 Styles
+// 💅 Styles
 const styles = {
   container: {
     display: "flex",
     justifyContent: "space-between",
-    gap: "40px", // Increased gap for more space between sections
+    gap: "40px",
     maxWidth: "1200px",
     margin: "30px auto",
+    flexWrap: "wrap",
+  },
 
-    flexWrap: "wrap", // Ensures layout is responsive on smaller screens
-  },
   formSection: {
-    width: "48%", // Increased width of the display section for more space
+    width: "48%",
     background: "#f8f8f8",
     border: "2px solid maroon",
-    padding: "25px", // Added more padding for space
+    padding: "25px",
     borderRadius: "10px",
     boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-    overflowY: "auto",
     maxHeight: "600px",
-    flex: "1 1 48%",  // Ensures the display section takes equal space
-    marginTop: "10px", // Spacing between sections
-    boxSizing: "border-box", // Ensures padding doesn't affect width
+    flex: "1 1 48%",
   },
+
   displaySection: {
-    width: "48%", // Increased width of the display section for more space
+    width: "48%",
     background: "#f8f8f8",
     border: "2px solid maroon",
-    padding: "25px", // Added more padding for space
+    padding: "25px",
     borderRadius: "10px",
     boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-    overflowY: "auto",
     maxHeight: "600px",
-    flex: "1 1 48%",  // Ensures the display section takes equal space
-    marginTop: "10px", // Spacing between sections
-    boxSizing: "border-box", // Ensures padding doesn't affect width
+    flex: "1 1 48%",
   },
-  heading: {
-    textAlign: "center",
-    marginBottom: "25px", // Increased bottom margin for space
-    color: "#333",
-    fontSize: "24px", // Increased font size for heading
-  },
+
   formGroup: {
-    marginBottom: "20px", // Increased margin between form fields
+    marginBottom: "20px",
   },
+
   label: {
-    display: "block",
-    marginBottom: "8px", // Increased margin for labels
     fontWeight: "bold",
-    color: "#444",
-    fontSize: "16px", // Adjusted font size for readability
+    display: "block",
+    marginBottom: "8px",
   },
+
   select: {
     width: "100%",
-    padding: "12px", // Increased padding for better clickability
-    fontSize: "16px", // Increased font size for easier reading
+    padding: "12px",
+    fontSize: "16px",
     borderRadius: "5px",
     border: "1px solid #ccc",
   },
-  button: {
-    marginTop: "25px", // Added more space above the button
-    width: "100%",
-    padding: "14px", // Increased button padding
-    fontSize: "18px", // Increased font size for better readability
-    backgroundColor: "maroon",
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-  },
-
 
   taggedProgramsContainer: {
     overflowY: "auto",
-    maxHeight: "500px", // Increased height for more space
-    marginTop: "15px", // Added more space above the table
-   
+    maxHeight: "500px",
+    marginTop: "10px",
   },
+
   table: {
     width: "100%",
     borderCollapse: "collapse",
-    marginTop: "10px", // Added space between table and text
+    textAlign: "left",
   },
+
   th: {
+    padding: "12px",
+    borderBottom: "2px solid #ccc",
     backgroundColor: "#f1f1f1",
-    padding: "15px", // Increased padding for table headers
-    textAlign: "left",
     fontWeight: "bold",
-    fontSize: "16px", // Adjusted font size for better readability
+    fontSize: "15px",
+    color: "#333",
   },
+
   td: {
-    padding: "12px", // Increased padding for table data
-    textAlign: "left",
+    padding: "10px",
     borderBottom: "1px solid #ddd",
-    fontSize: "16px", // Adjusted font size for better readability
+    fontSize: "14px",
+    color: "#333",
+    position: "relative",
+    zIndex: 1,
   },
+
   tbody: {
     width: "fit-content",
-  }
+  },
 };
-
 
 export default ProgramTagging;

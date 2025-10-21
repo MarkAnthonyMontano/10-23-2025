@@ -6755,34 +6755,85 @@ app.post("/adding_course", async (req, res) => {
 });
 
 // READ COURSE LIST (UPDATED!)
+// ✅ FIXED: Works with your curriculum_table structure
 app.get("/prgram_tagging_list", async (req, res) => {
   const readQuery = `
-     SELECT 
+    SELECT 
       pt.program_tagging_id,
-      c.year_id AS curriculum_description,
+      pt.curriculum_id,
+      pt.course_id,
+      pt.year_level_id,
+      pt.semester_id,
+      -- show readable labels
+      CONCAT(y.year_description, ' - ', p.program_description) AS curriculum_description,
       co.course_code,
       co.course_description,
       yl.year_level_description,
       s.semester_description
     FROM 
       program_tagging_table pt
-    JOIN curriculum_table c ON pt.curriculum_id = c.curriculum_id
-    JOIN course_table co ON pt.course_id = co.course_id
-    JOIN year_level_table yl ON pt.year_level_id = yl.year_level_id
-    JOIN semester_table s ON pt.semester_id = s.semester_id
+      JOIN curriculum_table c ON pt.curriculum_id = c.curriculum_id
+      JOIN year_table y ON c.year_id = y.year_id
+      JOIN program_table p ON c.program_id = p.program_id
+      JOIN course_table co ON pt.course_id = co.course_id
+      JOIN year_level_table yl ON pt.year_level_id = yl.year_level_id
+      JOIN semester_table s ON pt.semester_id = s.semester_id
   `;
 
   try {
     const [result] = await db3.query(readQuery);
     res.status(200).json(result);
-  } catch (err) {
-    console.error("Database error:", err);
-    res.status(500).json({
-      error: "Internal Server Error",
-      details: err.message,
-    });
+  } catch (error) {
+    console.error("Error fetching tagged programs:", error);
+    res.status(500).json({ error: "Error fetching program tagging list" });
   }
 });
+
+
+app.put("/program_tagging/:id", async (req, res) => {
+  const { id } = req.params;
+  const { curriculum_id, year_level_id, semester_id, course_id } = req.body;
+
+  try {
+    const query = `
+      UPDATE program_tagging_table
+      SET curriculum_id = ?, year_level_id = ?, semester_id = ?, course_id = ?
+      WHERE program_tagging_id = ?
+    `;
+    const [result] = await db3.query(query, [
+      curriculum_id,
+      year_level_id,
+      semester_id,
+      course_id,
+      id,
+    ]);
+
+    if (result.affectedRows === 0)
+      return res.status(404).json({ error: "Program tag not found" });
+
+    res.status(200).json({ message: "Program tag updated successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update program tag", details: err.message });
+  }
+});
+
+app.delete("/program_tagging/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const query = "DELETE FROM program_tagging_table WHERE program_tagging_id = ?";
+    const [result] = await db3.query(query, [id]);
+
+    if (result.affectedRows === 0)
+      return res.status(404).json({ error: "Program tag not found" });
+
+    res.status(200).json({ message: "Program tag deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete program tag", details: err.message });
+  }
+});
+
+
 
 // GET COURSES BY CURRICULUM ID (UPDATED!)
 app.get("/get_courses_by_curriculum/:curriculum_id", async (req, res) => {
