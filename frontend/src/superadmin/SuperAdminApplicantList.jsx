@@ -639,30 +639,31 @@ const ApplicantList = () => {
     const divToPrintRef = useRef();
 
 
-
     const printDiv = () => {
-  // ✅ Determine dynamic campus address
-  let campusAddress = "";
-  if (person?.campus === "0") {
-    campusAddress = settings?.campus_address || "Manila Campus";
-  } else if (person?.campus === "1") {
-    campusAddress = settings?.campus_address || "Cavite Campus";
-  }
+        // ✅ Determine dynamic campus address (dropdown or custom)
+        let campusAddress = "";
+        if (settings?.campus_address && settings.campus_address.trim() !== "") {
+            campusAddress = settings.campus_address;
+        } else if (settings?.address && settings.address.trim() !== "") {
+            campusAddress = settings.address;
+        } else {
+            campusAddress = "No address set in Settings";
+        }
 
-  // ✅ Dynamic logo and company name
-  const logoSrc = fetchedLogo || EaristLogo;
-  const name = companyName?.trim() || ""; // no hardcoded fallback
+        // ✅ Dynamic logo and company name
+        const logoSrc = fetchedLogo || EaristLogo;
+        const name = companyName?.trim() || "";
 
-  // ✅ Split company name into two balanced lines
-  const words = name.split(" ");
-  const middleIndex = Math.ceil(words.length / 2);
-  const firstLine = words.slice(0, middleIndex).join(" ");
-  const secondLine = words.slice(middleIndex).join(" ");
+        // ✅ Split company name into two balanced lines
+        const words = name.split(" ");
+        const middleIndex = Math.ceil(words.length / 2);
+        const firstLine = words.slice(0, middleIndex).join(" ");
+        const secondLine = words.slice(middleIndex).join(" ");
 
-  // ✅ Generate printable HTML
-  const newWin = window.open("", "Print-Window");
-  newWin.document.open();
-  newWin.document.write(`
+        // ✅ Generate printable HTML
+        const newWin = window.open("", "Print-Window");
+        newWin.document.open();
+        newWin.document.write(`
     <html>
       <head>
         <title>Applicant List</title>
@@ -690,25 +691,48 @@ const ApplicantList = () => {
             height: 120px;
             border-radius: 50%;
             object-fit: cover;
-          
           }
-          table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 20px;
-          }
-          th, td {
-            border: 0.5px solid black;
-            padding: 4px 6px;
-            font-size: 12px;
-            text-align: center;
-          }
-          th {
-            background-color: #800000;
-            color: white;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-          }
+
+    /* ✅ Uniform and visible table borders (fix thin right side) */
+table {
+  border-collapse: collapse; /* better for print consistency */
+  width: 100%;
+  margin-top: 20px;
+  border: 1.2px solid black; /* slightly thicker for print clarity */
+  table-layout: fixed;
+}
+
+th, td {
+  border: 1.2px solid black;
+  padding: 4px 6px;
+  font-size: 12px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+th, td {
+  word-wrap: break-word;
+}
+
+/* ✅ Ensure rightmost edge doesn’t fade out */
+table tr td:last-child,
+table tr th:last-child {
+  border-right: 1.2px solid black !important;
+}
+
+/* ✅ Optional: add slight table padding to prevent cutoff at page edge */
+.print-container {
+  padding-right: 10px; /* ensures right border isn’t cut off */
+  padding-left: 10px;
+}
+
+th {
+  background-color: #800000;
+  color: white;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
         </style>
       </head>
       <body onload="window.print(); setTimeout(() => window.close(), 100);">
@@ -720,25 +744,23 @@ const ApplicantList = () => {
             <div>
               <div>Republic of the Philippines</div>
 
-              <!-- ✅ Company Name (2 lines, dynamic, Times New Roman) -->
-              ${
-                name
-                  ? `
+              <!-- ✅ Dynamic company name -->
+              ${name
+                ? `
                     <b style="letter-spacing: 1px; font-size: 20px; font-family: 'Times New Roman', serif;">
                       ${firstLine}
                     </b>
-                    ${
-                      secondLine
-                        ? `<div style="letter-spacing: 1px; font-size: 20px; font-family: 'Times New Roman', serif;">
-                             <b>${secondLine}</b>
-                           </div>`
-                        : ""
-                    }
+                    ${secondLine
+                    ? `<div style="letter-spacing: 1px; font-size: 20px; font-family: 'Times New Roman', serif;">
+                            <b>${secondLine}</b>
+                          </div>`
+                    : ""
+                }
                   `
-                  : ""
-              }
+                : ""
+            }
 
-              <!-- ✅ Campus Address -->
+              <!-- ✅ Dynamic campus address -->
               <div style="font-size: 12px;">${campusAddress}</div>
 
               <div style="margin-top: 30px;">
@@ -762,28 +784,27 @@ const ApplicantList = () => {
             <tbody>
               ${filteredPersons
                 .map(
-                  (person) => `
+                    (person) => `
                     <tr>
                       <td>${person.applicant_number ?? "N/A"}</td>
                       <td>${person.last_name}, ${person.first_name} ${person.middle_name ?? ""} ${person.extension ?? ""}</td>
-                      <td>${
-                        curriculumOptions.find(
-                          (item) => item.curriculum_id?.toString() === person.program?.toString()
-                        )?.program_code ?? "N/A"
-                      }</td>
+                      <td>${curriculumOptions.find(
+                        (item) =>
+                            item.curriculum_id?.toString() === person.program?.toString()
+                    )?.program_code ?? "N/A"
+                        }</td>
                       <td>${person.generalAverage1 ?? ""}</td>
                       <td>${new Date(person.created_at).toLocaleDateString("en-PH", {
-                        year: "numeric",
-                        month: "short",
-                        day: "2-digit",
-                      })}</td>
-                      <td>${
-                        person.registrar_status === 1
-                          ? "Submitted"
-                          : person.registrar_status === 0
-                          ? "Unsubmitted / Incomplete"
-                          : ""
-                      }</td>
+                            year: "numeric",
+                            month: "short",
+                            day: "2-digit",
+                        })}</td>
+                      <td>${person.registrar_status === 1
+                            ? "Submitted"
+                            : person.registrar_status === 0
+                                ? "Unsubmitted / Incomplete"
+                                : ""
+                        }</td>
                     </tr>
                   `
                 )
@@ -794,9 +815,8 @@ const ApplicantList = () => {
       </body>
     </html>
   `);
-  newWin.document.close();
-};
-
+        newWin.document.close();
+    };
 
     return (
         <Box sx={{ height: 'calc(100vh - 150px)', overflowY: 'auto', pr: 1, p: 2 }}>

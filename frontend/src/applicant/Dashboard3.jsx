@@ -576,7 +576,7 @@ const Dashboard3 = (props) => {
                   required
                   name="schoolLastAttended"
                   placeholder="Enter School Last Attended"
-                  value={person.schoolLastAttended}
+                  value={person.schoolLastAttended || ""}
                   onChange={handleChange}
                   onBlur={() => handleUpdate(person)}
 
@@ -594,7 +594,7 @@ const Dashboard3 = (props) => {
                   size="small"
                   required
                   name="schoolAddress"
-                  value={person.schoolAddress}
+                  value={person.schoolAddress || ""}
                   onChange={handleChange}
                   placeholder="Enter your School Address"
                   onBlur={() => handleUpdate(person)}
@@ -613,7 +613,7 @@ const Dashboard3 = (props) => {
                   size="small"
                   name="courseProgram"
                   required
-                  value={person.courseProgram}
+                  value={person.courseProgram || ""}
                   placeholder="Enter your Course Program"
                   onChange={handleChange}
                   onBlur={() => handleUpdate(person)}
@@ -640,7 +640,7 @@ const Dashboard3 = (props) => {
                   size="small"
                   name="honor"
                   required
-                  value={person.honor}
+                  value={person.honor || ""}
                   placeholder="Enter your Honor"
                   onChange={handleChange}
                   onBlur={() => handleUpdate(person)}
@@ -659,7 +659,7 @@ const Dashboard3 = (props) => {
                   size="small"
                   required
                   name="generalAverage"
-                  value={person.generalAverage}
+                  value={person.generalAverage || ""}
                   placeholder="Enter your General Average"
                   onChange={handleChange}
                   onBlur={() => handleUpdate(person)}
@@ -679,7 +679,7 @@ const Dashboard3 = (props) => {
                   required
                   name="yearGraduated"
                   placeholder="Enter your Year Graduated"
-                  value={person.yearGraduated}
+                  value={person.yearGraduated || ""}
                   onChange={handleChange}
                   onBlur={() => handleUpdate(person)}
 
@@ -746,7 +746,7 @@ const Dashboard3 = (props) => {
                   required
                   name="schoolLastAttended1"
                   placeholder="Enter School Last Attended"
-                  value={person.schoolLastAttended1}
+                  value={person.schoolLastAttended1 || ""}
                   onChange={handleChange}
                   onBlur={() => handleUpdate(person)}
 
@@ -766,7 +766,7 @@ const Dashboard3 = (props) => {
                   required
                   name="schoolAddress1"
                   placeholder="Enter your School Address"
-                  value={person.schoolAddress1}
+                  value={person.schoolAddress1 || ""}
                   onChange={handleChange}
                   onBlur={() => handleUpdate(person)}
 
@@ -786,7 +786,7 @@ const Dashboard3 = (props) => {
                   required
                   name="courseProgram1"
                   placeholder="Enter your Course Program"
-                  value={person.courseProgram1}
+                  value={person.courseProgram1 || ""}
                   onChange={handleChange}
                   onBlur={() => handleUpdate(person)}
 
@@ -814,7 +814,7 @@ const Dashboard3 = (props) => {
                   required
                   name="honor1"
                   placeholder="Enter your Honor"
-                  value={person.honor1}
+                  value={person.honor1 || ""}
                   onChange={handleChange}
                   onBlur={() => handleUpdate(person)}
 
@@ -834,7 +834,7 @@ const Dashboard3 = (props) => {
                   required
                   name="generalAverage1"
                   placeholder="Enter your General Average"
-                  value={person.generalAverage1}
+                  value={person.generalAverage1 || ""}
                   onChange={handleChange}
                   onBlur={() => handleUpdate(person)}
 
@@ -854,7 +854,7 @@ const Dashboard3 = (props) => {
                   required
                   name="yearGraduated1"
                   placeholder="Enter your Year Graduated"
-                  value={person.yearGraduated1}
+                  value={person.yearGraduated1 || ""}
                   onChange={handleChange}
                   onBlur={() => handleUpdate(person)}
 

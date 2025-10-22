@@ -47,18 +47,14 @@ const ExamPermit = ({ personId }) => {
         extension: "",
     });
 
+    const [campusAddress, setCampusAddress] = useState("");
+
     useEffect(() => {
-        console.log("Fetched campus:", person.campus);
-    }, [person]);
+        if (settings && settings.address) {
+            setCampusAddress(settings.address);
+        }
+    }, [settings]);
 
-
-    const campusAddresses = {
-        0: "Nagtahan St. Sampaloc, Manila",
-        1: "Poblacion 5, Congressional Road, General Mariano Alvarez,",
-    };
-
-
-    const campusAddress = campusAddresses[person?.campus] || "";
 
 
     // ✅ First data fetch
@@ -242,10 +238,10 @@ const ExamPermit = ({ personId }) => {
                                     marginLeft: "-10px",
                                     width: "140px",
                                     height: "140px",
-                                   
+
                                     borderRadius: "50%", // ✅ perfectly circular
                                     objectFit: "cover",
-                                  
+
                                 }}
                             />
                         </td>

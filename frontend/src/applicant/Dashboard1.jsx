@@ -1159,7 +1159,7 @@ const Dashboard1 = (props) => {
                   size="small"
                   name="last_name"
                   required
-                  value={person.last_name}
+                  value={person.last_name || ""}
                   onChange={handleChange}
                   onBlur={() => handleUpdate(person)} placeholder="Enter your Last Name"
                   error={errors.last_name}
@@ -1176,7 +1176,7 @@ const Dashboard1 = (props) => {
                   size="small"
                   name="first_name"
                   required
-                  value={person.first_name}
+                  value={person.first_name || ""}
                   onChange={handleChange}
                   onBlur={() => handleUpdate(person)} placeholder="Enter your First Name"
                   error={errors.first_name}
@@ -1192,7 +1192,7 @@ const Dashboard1 = (props) => {
                   size="small"
                   name="middle_name"
                   required
-                  value={person.middle_name}
+                  value={person.middle_name || ""}
                   onChange={handleChange}
                   onBlur={() => handleUpdate(person)} placeholder="Enter your Middle Name"
                   error={errors.middle_name}
@@ -1236,7 +1236,7 @@ const Dashboard1 = (props) => {
                   size="small"
                   name="nickname"
                   required
-                  value={person.nickname}
+                  value={person.nickname || ""}
                   onChange={handleChange}
                   onBlur={() => handleUpdate(person)} placeholder="Enter your Nickname"
                   error={errors.nickname}
@@ -1254,7 +1254,7 @@ const Dashboard1 = (props) => {
                   <TextField
                     size="small"
                     name="height"
-                    value={person.height}
+                    value={person.height || ""}
                     onChange={handleChange}
                     onBlur={() => handleUpdate(person)} placeholder="Enter your Height"
                     error={!!errors.height}
@@ -1278,7 +1278,7 @@ const Dashboard1 = (props) => {
                   <TextField
                     size="small"
                     name="weight"
-                    value={person.weight}
+                    value={person.weight || ""}
                     onChange={handleChange}
                     onBlur={() => handleUpdate(person)} placeholder="Enter your Weight"
                     error={!!errors.weight}
@@ -1498,7 +1498,7 @@ const Dashboard1 = (props) => {
                 <Typography mb={1} fontWeight="medium">
                   Birth Place
                 </Typography>
-                <TextField fullWidth size="small" name="birthPlace" placeholder="Enter your Birth Place" value={person.birthPlace} required onBlur={handleBlur} onChange={handleChange} error={!!errors.birthPlace}
+                <TextField fullWidth size="small" name="birthPlace" placeholder="Enter your Birth Place" value={person.birthPlace || ""} required onBlur={handleBlur} onChange={handleChange} error={!!errors.birthPlace}
                   helperText={errors.birthPlace ? "This field is required." : ""} />
               </Box>
               <Box flex={1} >
@@ -1820,7 +1820,7 @@ const Dashboard1 = (props) => {
                   name="cellphoneNumber"
                   placeholder="Enter your Cellphone Number +63"
                   required
-                  value={person.cellphoneNumber}
+                  value={person.cellphoneNumber || ""}
                   onBlur={() => handleUpdate(person)} onChange={handleChange}
                   error={!!errors.cellphoneNumber}
                   helperText={errors.cellphoneNumber && "This field is required."}
@@ -1837,7 +1837,7 @@ const Dashboard1 = (props) => {
                   size="small"
                   name="emailAddress"
                   required
-                  value={person.emailAddress}
+                  value={person.emailAddress || ""}
                   placeholder="Enter your Email Address (e.g., username@gmail.com)"
                   onBlur={() => handleUpdate(person)} onChange={handleChange}
                   error={!!errors.emailAddress}
@@ -1861,7 +1861,7 @@ const Dashboard1 = (props) => {
                   fullWidth
                   size="small"
                   name="presentStreet"
-                  value={person.presentStreet}
+                  value={person.presentStreet || ""}
                   onBlur={() => handleUpdate(person)} placeholder="Enter your Present Street"
                   onChange={handleChange}
                   error={!!errors.presentStreet}
@@ -1876,7 +1876,7 @@ const Dashboard1 = (props) => {
                   size="small"
                   name="presentZipCode"
                   placeholder="Enter your Zip Code"
-                  value={person.presentZipCode}
+                  value={person.presentZipCode || ""}
                   onBlur={() => handleUpdate(person)} onChange={handleChange}
                   error={!!errors.presentZipCode}
                   helperText={errors.presentZipCode && "This field is required."}
@@ -2025,7 +2025,7 @@ const Dashboard1 = (props) => {
                 fullWidth
                 size="small"
                 name="presentDswdHouseholdNumber"
-                value={person.presentDswdHouseholdNumber}
+                value={person.presentDswdHouseholdNumber || ""}
                 onBlur={() => handleUpdate(person)} onChange={handleChange}
                 placeholder="Enter your Present DSWD Household Number"
                 error={!!errors.presentDswdHouseholdNumber}
@@ -2082,7 +2082,7 @@ const Dashboard1 = (props) => {
                   size="small"
                   name="permanentStreet"
                   placeholder="Enter your Permanent Street"
-                  value={person.permanentStreet}
+                  value={person.permanentStreet || ""}
                   onBlur={() => handleUpdate(person)} onChange={handleChange}
                   error={!!errors.permanentStreet}
                   helperText={errors.permanentStreet && "This field is required."}
@@ -2096,7 +2096,7 @@ const Dashboard1 = (props) => {
                   size="small"
                   name="permanentZipCode"
                   placeholder="Enter your Permanent Zip Code"
-                  value={person.permanentZipCode}
+                  value={person.permanentZipCode || ""}
                   onBlur={() => handleUpdate(person)} onChange={handleChange}
                   error={!!errors.permanentZipCode}
                   helperText={errors.permanentZipCode && "This field is required."}

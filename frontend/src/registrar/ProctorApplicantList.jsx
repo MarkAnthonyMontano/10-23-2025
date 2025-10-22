@@ -131,158 +131,172 @@ const ProctorApplicantList = () => {
     const newWin = window.open("", "Print-Window");
     newWin.document.open();
 
-    // ✅ Use dynamic logo and name
+    // ✅ Dynamic logo and company name from Settings
     const logoSrc = fetchedLogo || EaristLogo;
     const name = companyName?.trim() || "No Company Name Available";
 
+    // ✅ Split company name for layout
     const words = name.split(" ");
     const middleIndex = Math.ceil(words.length / 2);
     const firstLine = words.slice(0, middleIndex).join(" ");
     const secondLine = words.slice(middleIndex).join(" ");
-    const address = settings?.campus_address || "Nagtahan St. Sampaloc, Manila";
+
+    // ✅ Dynamic address from Settings (dropdown or custom)
+    let address = "";
+    if (settings?.campus_address) {
+      address = settings.campus_address;
+    } else if (settings?.address) {
+      address = settings.address;
+    } else {
+      address = "No address set in Settings";
+    }
 
     const htmlContent = `
-    <html>
-      <head>
-        <title>Proctor Applicant List</title>
-        <style>
-          @page { size: A4; margin: 10mm; }
-          body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-          .print-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-          }
-          .print-header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            width: 100%;
-          }
-          .print-header img {
-            position: absolute;
-            left: 0;
-            margin-left: 10px;
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid black;
-          }
-          table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 20px;
-          }
-          th, td {
-            border: 2px solid maroon;
-            padding: 6px;
-            font-size: 12px;
-            text-align: left;
-          }
-          th {
-            text-align: center;
-            background-color: #800000;
-            color: white;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-          }
-        </style>
-      </head>
-      <body onload="window.print(); setTimeout(() => window.close(), 100);">
-        <div class="print-container">
-          <!-- ✅ HEADER -->
-          <div class="print-header">
-            <img src="${logoSrc}" alt="School Logo" />
-            <div>
-              <div>Republic of the Philippines</div>
-             <b style="letter-spacing: 1px; font-size: 22px; font-family: 'Times New Roman', serif;">
-  ${firstLine}
-</b>
-${secondLine
+  <html>
+    <head>
+      <title>Proctor Applicant List</title>
+      <style>
+        @page { size: A4; margin: 10mm; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        .print-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+        .print-header {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          width: 100%;
+        }
+        .print-header img {
+          position: absolute;
+          left: 0;
+          margin-left: 10px;
+          width: 120px;
+          height: 120px;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 2px solid black;
+        }
+        table {
+          border-collapse: collapse;
+          width: 100%;
+          margin-top: 20px;
+        }
+        th, td {
+          border: 2px solid maroon;
+          padding: 6px;
+          font-size: 12px;
+          text-align: left;
+        }
+        th {
+          text-align: center;
+          background-color: #800000;
+          color: white;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+      </style>
+    </head>
+    <body onload="window.print(); setTimeout(() => window.close(), 100);">
+      <div class="print-container">
+        <!-- ✅ HEADER -->
+        <div class="print-header">
+          <img src="${logoSrc}" alt="School Logo" />
+          <div>
+            <div>Republic of the Philippines</div>
+
+            <!-- ✅ Dynamic company name -->
+            <b style="letter-spacing: 1px; font-size: 22px; font-family: 'Times New Roman', serif;">
+              ${firstLine}
+            </b>
+            ${secondLine
         ? `<div style="letter-spacing: 1px; font-size: 22px; font-family: 'Times New Roman', serif;">
-         <b>${secondLine}</b>
-       </div>`
+                     <b>${secondLine}</b>
+                   </div>`
         : ""
       }
 
-              <div>${address}</div>
-              <div style="margin-top: 25px;">
-                <b style="font-size: 22px; letter-spacing: 1px;">Proctor Applicant List</b>
-              </div>
+            <!-- ✅ Dynamic address from Settings -->
+            <div style="font-size: 12px;">${address}</div>
+
+            <div style="margin-top: 25px;">
+              <b style="font-size: 22px; letter-spacing: 1px;">Proctor Applicant List</b>
             </div>
           </div>
+        </div>
 
-          <!-- ✅ PROCTOR INFO -->
-          <div style="margin-top: 20px; width: 100%; display: flex; flex-direction: column; gap: 8px;">
-            <div style="display: flex; justify-content: space-between; width: 100%;">
-              <span><b>Proctor:</b> ${proctor?.proctor || "N/A"}</span>
-              <span><b>Building:</b> ${proctor?.building_description || "N/A"}</span>
-            </div>
+        <!-- ✅ PROCTOR INFO -->
+        <div style="margin-top: 20px; width: 100%; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; width: 100%;">
+            <span><b>Proctor:</b> ${proctor?.proctor || "N/A"}</span>
+            <span><b>Building:</b> ${proctor?.building_description || "N/A"}</span>
+          </div>
 
-            <div style="display: flex; justify-content: space-between; width: 100%;">
-              <span><b>Room:</b> ${proctor?.room_description || "N/A"}</span>
-              <span><b>Schedule:</b>
-                ${proctor?.day_description || ""} |
-                ${proctor?.start_time
+          <div style="display: flex; justify-content: space-between; width: 100%;">
+            <span><b>Room:</b> ${proctor?.room_description || "N/A"}</span>
+            <span><b>Schedule:</b>
+              ${proctor?.day_description || ""} |
+              ${proctor?.start_time
         ? new Date("1970-01-01T" + proctor.start_time).toLocaleTimeString("en-US", {
           hour: "numeric",
           minute: "2-digit",
-          hour12: true
+          hour12: true,
         })
         : ""
       } -
-                ${proctor?.end_time
+              ${proctor?.end_time
         ? new Date("1970-01-01T" + proctor.end_time).toLocaleTimeString("en-US", {
           hour: "numeric",
           minute: "2-digit",
-          hour12: true
+          hour12: true,
         })
         : ""
       }
-              </span>
-            </div>
+            </span>
           </div>
+        </div>
 
-          <!-- ✅ APPLICANT TABLE -->
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Applicant #</th>
-                <th>Applicant Name</th>
-                <th>Program</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${applicants
+        <!-- ✅ APPLICANT TABLE -->
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Applicant #</th>
+              <th>Applicant Name</th>
+              <th>Program</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${applicants
         .map((a, index) => {
           const program =
             curriculumOptions.find(
               (item) => item.curriculum_id?.toString() === a.program?.toString()
             )?.program_code ?? "N/A";
           return `
-                    <tr>
-                      <td>${index + 1}</td>
-                      <td>${a.applicant_number}</td>
-                      <td>${a.last_name}, ${a.first_name} ${a.middle_name || ""}</td>
-                      <td>${program}</td>
-                    </tr>`;
+                  <tr>
+                    <td>${index + 1}</td>
+                    <td>${a.applicant_number}</td>
+                    <td>${a.last_name}, ${a.first_name} ${a.middle_name || ""}</td>
+                    <td>${program}</td>
+                  </tr>`;
         })
         .join("")}
-              <tr>
-                <td colspan="4" style="text-align:right; font-weight:bold;">
-                  Total Applicants: ${applicants.length}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </body>
-    </html>
-  `;
+            <tr>
+              <td colspan="4" style="text-align:right; font-weight:bold;">
+                Total Applicants: ${applicants.length}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </body>
+  </html>
+`;
 
     newWin.document.write(htmlContent);
     newWin.document.close();

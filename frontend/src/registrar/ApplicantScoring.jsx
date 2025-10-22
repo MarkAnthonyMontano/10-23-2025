@@ -94,7 +94,7 @@ const ApplicantScoring = () => {
 
 
     const navigate = useNavigate();
-    const [activeStep, setActiveStep] = useState(3);
+    const [activeStep, setActiveStep] = useState(7);
     const [clickedSteps, setClickedSteps] = useState(Array(tabs.length).fill(false));
 
 
@@ -455,127 +455,148 @@ const ApplicantScoring = () => {
 
 
     const printDiv = () => {
-        // ✅ Determine dynamic campus address
-        let campusAddress = "";
-        if (person?.campus === "0") {
-            campusAddress = settings?.campus_address || "Manila Campus";
-        } else if (person?.campus === "1") {
-            campusAddress = settings?.campus_address || "Cavite Campus";
-        }
+        const newWin = window.open("", "Print-Window");
+        newWin.document.open();
 
-        // ✅ Dynamic logo and company name
+        // ✅ Dynamic logo and company name from Settings
         const logoSrc = fetchedLogo || EaristLogo;
-        const name = companyName?.trim() || ""; // No hardcoded fallback
+        const name = companyName?.trim() || "No Company Name Available";
 
-        // ✅ Split company name into two balanced lines
+        // ✅ Split company name into two lines for layout
         const words = name.split(" ");
         const middleIndex = Math.ceil(words.length / 2);
         const firstLine = words.slice(0, middleIndex).join(" ");
         const secondLine = words.slice(middleIndex).join(" ");
 
-        // ✅ Generate printable HTML
-        const newWin = window.open("", "Print-Window");
-        newWin.document.open();
-        newWin.document.write(`
-    <html>
-      <head>
-        <title>Entrance Examination Scores</title>
-        <style>
-          @page { size: A4; margin: 10mm; }
-          body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-          .print-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-          }
-          .print-header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            width: 100%;
-          }
-          .print-header img {
-            position: absolute;
-            left: 0;
-            margin-left: 10px;
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-       
-          }
-          table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 20px;
-          }
-          th, td {
-            border: 0.5px solid black;
-            padding: 4px 6px;
-            font-size: 12px;
-            text-align: center;
-          }
-          th {
-            background-color: #800000;
-            color: white;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-          }
-        </style>
-      </head>
-      <body onload="window.print(); setTimeout(() => window.close(), 100);">
-        <div class="print-container">
-        
-          <!-- ✅ HEADER -->
-          <div class="print-header">
-            <img src="${logoSrc}" alt="School Logo" />
-            <div>
-              <div>Republic of the Philippines</div>
+        // ✅ Dynamic campus address from Settings (dropdown or custom)
+        let campusAddress = "";
+        if (settings?.campus_address) {
+            campusAddress = settings.campus_address;
+        } else if (settings?.address) {
+            campusAddress = settings.address;
+        } else {
+            campusAddress = "No address set in Settings";
+        }
 
-              <!-- ✅ Dynamic Company Name (Two Lines) -->
-              ${name
-                ? `
-                    <b style="letter-spacing: 1px; font-size: 20px; font-family: 'Times New Roman', serif;">
-                      ${firstLine}
-                    </b>
-                    ${secondLine
-                    ? `<div style="letter-spacing: 1px; font-size: 20px; font-family: 'Times New Roman', serif;">
-                             <b>${secondLine}</b>
-                           </div>`
-                    : ""
-                }
-                  `
+        const htmlContent = `
+  <html>
+    <head>
+      <title>Entrance Examination Scores</title>
+    <style>
+  @page { size: A4; margin: 10mm; }
+  body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+
+  .print-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0 10px; /* ✅ ensures right/left borders are not cut off */
+  }
+
+  .print-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 100%;
+  }
+
+  .print-header img {
+    position: absolute;
+    left: 0;
+    margin-left: 10px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  /* ✅ Consistent and thicker table borders */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 20px;
+  border: 1.5px solid black;
+  table-layout: fixed; /* ✅ lock column widths */
+}
+th, td {
+  border: 1.5px solid black;
+  padding: 6px;
+  font-size: 12px;
+  text-align: center;
+  word-wrap: break-word; /* ✅ prevent overflow */
+  box-sizing: border-box;
+}
+
+  /* ✅ Force right border to print cleanly */
+  th:last-child,
+  td:last-child {
+    border-right: 1.2px solid maroon !important;
+  }
+
+  /* ✅ Slight padding helps prevent printer cutoff */
+  @media print {
+    body {
+      margin-right: 5mm;
+      margin-left: 5mm;
+    }
+  }
+
+  th {
+    background-color: #800000;
+    color: white;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+</style>
+
+    </head>
+    <body onload="window.print(); setTimeout(() => window.close(), 100);">
+      <div class="print-container">
+        <!-- ✅ HEADER -->
+        <div class="print-header">
+          <img src="${logoSrc}" alt="School Logo" />
+          <div>
+            <div>Republic of the Philippines</div>
+
+            <!-- ✅ Dynamic company name -->
+            <b style="letter-spacing: 1px; font-size: 22px; font-family: 'Times New Roman', serif;">
+              ${firstLine}
+            </b>
+            ${secondLine
+                ? `<div style="letter-spacing: 1px; font-size: 22px; font-family: 'Times New Roman', serif;">
+                     <b>${secondLine}</b>
+                   </div>`
                 : ""
             }
 
-              <!-- ✅ Dynamic Campus Address -->
-              <div style="font-size: 12px;">${campusAddress}</div>
+            <!-- ✅ Dynamic campus address from Settings -->
+            <div style="font-size: 12px;">${campusAddress}</div>
 
-              <div style="margin-top: 30px;">
-                <b style="font-size: 24px; letter-spacing: 1px;">Entrance Examination Scores</b>
-              </div>
+            <div style="margin-top: 25px;">
+              <b style="font-size: 22px; letter-spacing: 1px;">Entrance Examination Scores</b>
             </div>
           </div>
+        </div>
 
-          <!-- ✅ TABLE -->
-          <table>
-            <thead>
-              <tr>
-                <th style="width:10%">Applicant ID</th>
-                <th class="name-col">Applicant Name</th>
-                <th style="width:15%">Program</th>
-                <th style="width:7%">English</th>
-                <th style="width:7%">Science</th>
-                <th style="width:7%">Filipino</th>
-                <th style="width:7%">Math</th>
-                <th style="width:7%">Abstract</th>
-                <th style="width:10%">Final Rating</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${filteredPersons
+        <!-- ✅ TABLE -->
+        <table>
+          <thead>
+            <tr>
+              <th style="width:15%">Applicant ID</th>
+              <th class="name-col">Applicant Name</th>
+              <th style="width:15%">Program</th>
+              <th style="width:7%">English</th>
+              <th style="width:7%">Science</th>
+              <th style="width:7%">Filipino</th>
+              <th style="width:7%">Math</th>
+              <th style="width:7%">Abstract</th>
+              <th style="width:10%">Final Rating</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredPersons
                 .map((person) => {
                     const english = Number(person.english) || 0;
                     const science = Number(person.science) || 0;
@@ -585,31 +606,29 @@ const ApplicantScoring = () => {
                     const computedFinalRating = (english + science + filipino + math + abstract) / 5;
 
                     return `
-                    <tr>
-                      <td>${person.applicant_number ?? "N/A"}</td>
-                      <td class="name-col">${person.last_name}, ${person.first_name} ${person.middle_name ?? ""} ${person.extension ?? ""}</td>
-                      <td>${curriculumOptions.find(
+                <tr>
+                  <td>${person.applicant_number ?? "N/A"}</td>
+                  <td class="name-col">${person.last_name}, ${person.first_name} ${person.middle_name ?? ""} ${person.extension ?? ""}</td>
+                  <td>${curriculumOptions.find(
                         (item) =>
-                            item.curriculum_id?.toString() ===
-                            person.program?.toString()
-                    )?.program_code ?? "N/A"
-                        }</td>
-                      <td>${english}</td>
-                      <td>${science}</td>
-                      <td>${filipino}</td>
-                      <td>${math}</td>
-                      <td>${abstract}</td>
-                      <td>${computedFinalRating.toFixed(2)}</td>
-                    </tr>
-                  `;
+                            item.curriculum_id?.toString() === person.program?.toString()
+                    )?.program_code ?? "N/A"}</td>
+                  <td>${english}</td>
+                  <td>${science}</td>
+                  <td>${filipino}</td>
+                  <td>${math}</td>
+                  <td>${abstract}</td>
+                  <td>${computedFinalRating.toFixed(2)}</td>
+                </tr>`;
                 })
                 .join("")}
-            </tbody>
-          </table>
-        </div>
-      </body>
-    </html>
-  `);
+          </tbody>
+        </table>
+      </div>
+    </body>
+  </html>`;
+
+        newWin.document.write(htmlContent);
         newWin.document.close();
     };
 

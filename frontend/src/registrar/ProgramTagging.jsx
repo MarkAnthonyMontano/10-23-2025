@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Box, Typography, Button } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const ProgramTagging = () => {
   const [progTag, setProgTag] = useState({
@@ -280,35 +282,48 @@ const ProgramTagging = () => {
                         <button
                           onClick={() => handleEdit(program)}
                           style={{
-                            background: "#FFD700",
-                            color: "black",
+                            backgroundColor: "#2E7D32", // success (green)
+                            color: "white",
                             border: "none",
                             borderRadius: "5px",
-                            padding: "6px 10px",
+                            padding: "8px 14px",
                             marginRight: "6px",
                             cursor: "pointer",
                             position: "relative",
                             zIndex: 2,
                             pointerEvents: "auto",
+                            width: "100px", // 👈 consistent width
+                            height: "40px", // 👈 consistent height
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "5px",
                           }}
                         >
-                          ✏️ Edit
+                          <EditIcon fontSize="small" /> Edit
                         </button>
+
                         <button
                           onClick={() => handleDelete(program.program_tagging_id)}
                           style={{
-                            background: "darkred",
+                            backgroundColor: "#800000", // maroon
                             color: "white",
                             border: "none",
                             borderRadius: "5px",
-                            padding: "6px 10px",
+                            padding: "8px 14px",
                             cursor: "pointer",
                             position: "relative",
                             zIndex: 2,
                             pointerEvents: "auto",
+                            width: "100px", // 👈 same width
+                            height: "40px", // 👈 same height
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "5px",
                           }}
                         >
-                          🗑️ Delete
+                          <DeleteIcon fontSize="small" /> Delete
                         </button>
                       </td>
                     </tr>

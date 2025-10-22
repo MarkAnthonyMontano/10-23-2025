@@ -259,26 +259,30 @@ const ClassRoster = () => {
   );
 
   const printDiv = () => {
-  let campusAddress = "";
-  if (selectedCampus === "0") {
-    campusAddress = "Nagtahan St. Sampaloc, Manila";
-  } else if (selectedCampus === "1") {
-    campusAddress = "Blk. 3 Lot 2, 5 Congressional Rd, General Mariano Alvarez";
-  }
+    // ✅ Determine dynamic campus address (dropdown or custom)
+    let campusAddress = "";
+    if (settings?.campus_address && settings.campus_address.trim() !== "") {
+      campusAddress = settings.campus_address;
+    } else if (settings?.address && settings.address.trim() !== "") {
+      campusAddress = settings.address;
+    } else {
+      campusAddress = "No address set in Settings";
+    }
 
-  // ✅ Dynamic name and logo
-  const logoSrc = fetchedLogo || EaristLogo;
-  const name = companyName?.trim() || "Eulogio Amang Rodriguez Institute of Science and Technology";
+    // ✅ Dynamic logo and company name
+    const logoSrc = fetchedLogo || EaristLogo;
+    const name = companyName?.trim() || "";
 
-  // ✅ Split into two lines
-  const words = name.split(" ");
-  const middle = Math.ceil(words.length / 2);
-  const firstLine = words.slice(0, middle).join(" ");
-  const secondLine = words.slice(middle).join(" ");
+    // ✅ Split company name into two balanced lines
+    const words = name.split(" ");
+    const middleIndex = Math.ceil(words.length / 2);
+    const firstLine = words.slice(0, middleIndex).join(" ");
+    const secondLine = words.slice(middleIndex).join(" ");
 
-  const newWin = window.open("", "Print-Window");
-  newWin.document.open();
-  newWin.document.write(`
+    // ✅ Open new print window
+    const newWin = window.open("", "Print-Window");
+    newWin.document.open();
+    newWin.document.write(`
   <html>
     <head>
       <title>Student List</title>
@@ -310,24 +314,20 @@ const ClassRoster = () => {
           height: 120px;
           border-radius: 50%;
           object-fit: cover;
-          
         }
         table {
           border-collapse: collapse;
           width: 100%;
-          scale: 0.95;
           margin-top: 20px;
+          border: 1.2px solid black;
+          table-layout: fixed;
         }
-        th {
-          text-align: center;
-        }
-        .name { min-width: 180px; }
-        .year-level { min-width: 60px; }
-        .semester { min-width: 80px; }
         th, td {
-          border: 0.5px solid black;
+          border: 1.2px solid black;
           padding: 4px 6px;
           font-size: 12px;
+          text-align: center;
+          box-sizing: border-box;
         }
         th {
           background-color: #800000;
@@ -335,33 +335,40 @@ const ClassRoster = () => {
           -webkit-print-color-adjust: exact;
           print-color-adjust: exact;
         }
+        .name { min-width: 180px; }
+        .year-level { min-width: 60px; }
+        .semester { min-width: 80px; }
       </style>
     </head>
     <body onload="window.print(); setTimeout(() => window.close(), 100);">
       <div class="print-container">
 
-        <!-- Header -->
+        <!-- ✅ HEADER -->
         <div class="print-header">
-          <img src="${logoSrc}" alt="School Logo" style="margin-top: -30px;"/>
-          <div style="margin-top: 10px;">
+          <img src="${logoSrc}" alt="School Logo" />
+          <div>
             <div>Republic of the Philippines</div>
-            <b style="letter-spacing: 1px; font-size: 20px; font-family: 'Times New Roman', serif;">
-              ${firstLine}
-            </b>
-            ${secondLine ? `
-              <div style="letter-spacing: 1px; font-size: 20px; font-family: 'Times New Roman', serif;">
-                <b>${secondLine}</b>
-              </div>` : ""}
-            <div>${campusAddress}</div>
+            ${name
+        ? `
+                  <b style="letter-spacing: 1px; font-size: 20px; font-family: 'Times New Roman', serif;">
+                    ${firstLine}
+                  </b>
+                  ${secondLine
+          ? `<div style="letter-spacing: 1px; font-size: 20px; font-family: 'Times New Roman', serif;"><b>${secondLine}</b></div>`
+          : ""
+        }
+                `
+        : ""
+      }
+            <div style="font-size: 12px;">${campusAddress}</div>
+
             <div style="margin-top: 30px;">
-              <b style="font-size: 20px; letter-spacing: 1px;">
-                STUDENT LIST
-              </b>
+              <b style="font-size: 20px; letter-spacing: 1px;">STUDENT LIST</b>
             </div>
           </div>
         </div>
 
-        <!-- Table -->
+        <!-- ✅ TABLE -->
         <table>
           <thead>
             <tr>
@@ -377,33 +384,34 @@ const ClassRoster = () => {
             </tr>
           </thead>
           <tbody>
-            ${filteredStudents.map((student, index) => {
-              const program = curriculumOptions.find(
-                item => String(item.program_id) === String(student.program_id)
-              );
-              return `
-                <tr>
-                  <td style="text-align: center;">${index + 1}</td>
-                  <td style="text-align: center;">${student.student_number ?? "N/A"}</td>
-                  <td class="name">${student.last_name}, ${student.first_name} ${student.middle_name ?? ""} ${student.extension ?? ""}</td>
-                  <td style="text-align: center; min-width: 80px;">${program?.program_code ?? "N/A"}</td>
-                  <td class="year-level">${student.year_level_description ?? "N/A"}</td>
-                  <td class="semester">${semesters.find(s => String(s.semester_id) === String(student.semester_id))?.semester_description ?? "N/A"}</td>
-                  <td class="remarks" style="text-align: center;">${remarksMap[student.en_remarks] ?? "N/A"}</td>
-                  <td>${student.created_at ? new Date(student.created_at).toLocaleDateString("en-PH") : "N/A"}</td>
-                  <td class="status" style="text-align: center;">${Number(student.status) === 1 ? "Regular" : "Irregular"}</td>
-                </tr>
-              `;
-            }).join("")}
+            ${filteredStudents
+        .map((student, index) => {
+          const program = curriculumOptions.find(
+            item => String(item.program_id) === String(student.program_id)
+          );
+          return `
+                  <tr>
+                    <td>${index + 1}</td>
+                    <td>${student.student_number ?? "N/A"}</td>
+                    <td class="name">${student.last_name}, ${student.first_name} ${student.middle_name ?? ""} ${student.extension ?? ""}</td>
+                    <td>${program?.program_code ?? "N/A"}</td>
+                    <td>${student.year_level_description ?? "N/A"}</td>
+                    <td>${semesters.find(s => String(s.semester_id) === String(student.semester_id))?.semester_description ?? "N/A"}</td>
+                    <td>${remarksMap[student.en_remarks] ?? "N/A"}</td>
+                    <td>${student.created_at ? new Date(student.created_at).toLocaleDateString("en-PH") : "N/A"}</td>
+                    <td>${Number(student.status) === 1 ? "Regular" : "Irregular"}</td>
+                  </tr>
+                `;
+        })
+        .join("")}
           </tbody>
         </table>
-        
       </div>
     </body>
   </html>
 `);
-  newWin.document.close();
-};
+    newWin.document.close();
+  };
 
   // 🔒 Disable right-click
   document.addEventListener('contextmenu', (e) => e.preventDefault());

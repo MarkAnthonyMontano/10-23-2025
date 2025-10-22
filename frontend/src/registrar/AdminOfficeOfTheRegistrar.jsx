@@ -85,17 +85,14 @@ const OfficeOfTheRegistrar = () => {
         guardian_middle_name: "", guardian_ext: "", guardian_nickname: "", guardian_address: "", guardian_contact: "", guardian_email: "", generalAverage1: "",
     });
 
+    const [campusAddress, setCampusAddress] = useState("");
+
     useEffect(() => {
-        console.log("Fetched campus:", person.campus);
-    }, [person]);
+        if (settings && settings.address) {
+            setCampusAddress(settings.address);
+        }
+    }, [settings]);
 
-
-    const campusAddresses = {
-        0: "Nagtahan St. Sampaloc, Manila",
-        1: "Poblacion 5, Congressional Road, General Mariano Alvarez",
-    };
-
-    const campusAddress = campusAddresses[person?.campus] || "";
     // ✅ Fetch person data from backend
     const fetchPersonData = async (id) => {
         try {
@@ -256,7 +253,7 @@ const OfficeOfTheRegistrar = () => {
     });
 
 
- return (
+    return (
         <Box sx={{ height: 'calc(95vh - 80px)', overflowY: 'auto', paddingRight: 1, backgroundColor: 'transparent' }}>
             <Container>
                 <h1 style={{ fontSize: "40px", fontWeight: "bold", textAlign: "Left", color: "maroon", marginTop: "25px" }}> OFFICE OF THE REGISTRAR</h1>

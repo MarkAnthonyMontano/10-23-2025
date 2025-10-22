@@ -82,18 +82,14 @@ const TOR = () => {
     });
 
 
+
+    const [campusAddress, setCampusAddress] = useState("");
+
     useEffect(() => {
-        console.log("Fetched campus:", person.campus);
-    }, [person]);
-
-
-    const campusAddresses = {
-        0: "Nagtahan St. Sampaloc, Manila",
-        1: "Poblacion 5, Congressional Road, General Mariano Alvarez,",
-    };
-
-
-    const campusAddress = campusAddresses[person?.campus] || "";
+        if (settings && settings.address) {
+            setCampusAddress(settings.address);
+        }
+    }, [settings]);
 
     // ✅ Fetch person data from backend
     const fetchPersonData = async (id) => {
@@ -291,18 +287,24 @@ const TOR = () => {
 
     return (
         <Box className="body" sx={{ height: 'calc(100vh - 150px)', overflowY: 'auto', overflowX: 'hidden', pr: 1, p: 2 }}>
-            <Box className="navbars" sx={{ display: "flex", background: "white", alignItems: "center" }}>
-
+            <Box
+                className="navbars"
+                sx={{
+                    display: "flex",
+                    background: "white",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    paddingX: "1rem",
+                    mb: 2,
+                }}
+            >
+                {/* Left: Title */}
                 <Typography
                     variant="h4"
                     sx={{
                         fontWeight: "bold",
                         color: "maroon",
                         fontSize: "36px",
-                        position: "fixed",
-                        width: "75%",
-                        height: "60px",
-                        marginTop: "1.8rem",
                         background: "white",
                         display: "flex",
                         alignItems: "center",
@@ -311,25 +313,37 @@ const TOR = () => {
                     TRANSCRIPT OF RECORDS
                 </Typography>
 
-                <div className='w-[10rem] h-[3rem] text-[18px] mt-[2.5rem] right-[28.5rem] fixed text-white rounded'>
+                {/* Right: Search + Print grouped together */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                     <TextField
                         variant="outlined"
                         placeholder="Enter Student Number"
                         size="small"
                         value={studentNumber}
-
                         onChange={(e) => {
                             setStudentNumber(e.target.value);
                             setSearchQuery(e.target.value);
                         }}
                         InputProps={{ startAdornment: <Search sx={{ mr: 1 }} /> }}
-                        sx={{ width: { xs: "100%", sm: "425px" }, mt: { xs: 2, sm: 0 }, background: "white" }}
+                        sx={{
+                            width: { xs: "100%", sm: "425px" },
+                            background: "white",
+                        }}
                     />
-                </div>
-                <button onClick={printDiv} className='bg-maroon-500 w-[10rem] h-[3rem] text-[18px] mt-[2rem] text-white rounded fixed right-[1rem]'>
-                    Print
-                </button>
+
+                    <button
+                        onClick={printDiv}
+                        className="bg-maroon-500 w-[10rem] h-[3rem] text-[18px] text-white rounded"
+                    >
+                        Print
+                    </button>
+                </Box>
             </Box>
+
+            <hr style={{ border: "1px solid #ccc", width: "100%" }} />
+            <br />
+
+
             <style>
                 {`
                 @media print {
@@ -428,6 +442,7 @@ const TOR = () => {
                                                         fontSize: "1.6rem",
                                                         letterSpacing: "-1px",
                                                         fontWeight: "600",
+                                                        fontFamily: "Times new roman"
                                                     }}
                                                 >
                                                     {firstLine}
@@ -439,6 +454,7 @@ const TOR = () => {
                                                             fontSize: "1.6rem",
                                                             letterSpacing: "-1px",
                                                             fontWeight: "600",
+                                                            fontFamily: "Times new roman"
                                                         }}
                                                     >
                                                         {secondLine}
@@ -449,7 +465,7 @@ const TOR = () => {
                                     })()
                                 )}
 
-                                <Typography>{campusAddress}</Typography>
+                                <Typography style={{ fontSize: "12px" }}>{campusAddress}</Typography>
                             </Box>
 
                         </Box>

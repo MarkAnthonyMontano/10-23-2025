@@ -28,10 +28,10 @@ const StudentAdmissionFormProcess = () => {
     }
   }, [settings]);
 
-    const words = companyName.trim().split(" ");
-    const middleIndex = Math.ceil(words.length / 2);
-    const firstLine = words.slice(0, middleIndex).join(" ");
-    const secondLine = words.slice(middleIndex).join(" ");
+  const words = companyName.trim().split(" ");
+  const middleIndex = Math.ceil(words.length / 2);
+  const firstLine = words.slice(0, middleIndex).join(" ");
+  const secondLine = words.slice(middleIndex).join(" ");
 
 
   const [userID, setUserID] = useState("");
@@ -233,16 +233,15 @@ const StudentAdmissionFormProcess = () => {
     }
   };
 
+
+
+  const [campusAddress, setCampusAddress] = useState("");
+
   useEffect(() => {
-    console.log("Fetched campus:", person.campus);
-  }, [person]);
-
-  const campusAddresses = {
-    0: "Nagtahan St. Sampaloc, Manila",
-    1: "Poblacion 5, Congressional Road, General Mariano Alvarez",
-  };
-
-  const campusAddress = campusAddresses[person?.campus] || "";
+    if (settings && settings.address) {
+      setCampusAddress(settings.address);
+    }
+  }, [settings]);
 
 
   const fetchPersonData = async (id) => {

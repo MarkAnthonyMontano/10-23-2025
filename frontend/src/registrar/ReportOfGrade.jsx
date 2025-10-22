@@ -1,10 +1,44 @@
 import { Box, Typography, TextField, Snackbar, Alert, FormControl, InputLabel, Select, MenuItem, Paper, TableContainer } from "@mui/material";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
+import { SettingsContext } from "../App";
 import EaristLogo from "../assets/EaristLogo.png";
 import { Search } from "@mui/icons-material";
 import axios from 'axios';
 
 const ReportOfGrade = () => {
+    const settings = useContext(SettingsContext);
+    const [fetchedLogo, setFetchedLogo] = useState(EaristLogo); // ✅ fallback
+    const [companyName, setCompanyName] = useState("");
+
+    useEffect(() => {
+        if (settings) {
+            // ✅ load dynamic logo
+            if (settings.logo_url) {
+                setFetchedLogo(`http://localhost:5000${settings.logo_url}`);
+            } else {
+                setFetchedLogo(EaristLogo);
+            }
+
+            // ✅ load dynamic name + address
+            if (settings.company_name) setCompanyName(settings.company_name);
+            if (settings.campus_address) setCampusAddress(settings.campus_address);
+        }
+    }, [settings]);
+
+    const words = companyName.trim().split(" ");
+    const middle = Math.ceil(words.length / 2);
+    const firstLine = words.slice(0, middle).join(" ");
+    const secondLine = words.slice(middle).join(" ");
+
+    const [campusAddress, setCampusAddress] = useState("");
+
+    useEffect(() => {
+        if (settings && settings.address) {
+            setCampusAddress(settings.address);
+        }
+    }, [settings]);
+
+
     const [userID, setUserID] = useState("");
     const [user, setUser] = useState("");
     const [userRole, setUserRole] = useState("");
@@ -187,12 +221,12 @@ const ReportOfGrade = () => {
                     justifyContent: "space-between",
                     alignItems: "center",
                     flexWrap: "wrap",
-                  
                     mb: 2,
                     px: 2,
                     background: "white",
                 }}
             >
+                {/* Title */}
                 <Typography
                     variant="h4"
                     sx={{
@@ -201,38 +235,47 @@ const ReportOfGrade = () => {
                         fontSize: "36px",
                     }}
                 >
-                    Program Evaluation
+                    TRANSCRIPT OF RECORDS
                 </Typography>
 
-                {/* Search Field */}
-                <TextField
-                    variant="outlined"
-                    placeholder="Enter Student Number"
-                    size="small"
-                    value={studentNumber}
-                    onChange={(e) => {
-                        setStudentNumber(e.target.value);
-                        setSearchQuery(e.target.value);
-                    }}
-                    InputProps={{ startAdornment: <Search sx={{ mr: 1 }} /> }}
+                {/* Right Section: Search Field + Print Button */}
+                <Box
                     sx={{
-                        width: { xs: "100%", sm: "425px" },
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        flexWrap: "wrap",
                         mt: { xs: 2, sm: 0 },
-                        background: "white",
                     }}
-                />
-
-                {/* Print Button */}
-                <button
-                    onClick={printDiv}
-                    className="bg-maroon-500 w-[10rem] h-[3rem] text-[18px] mt-2 text-white rounded"
                 >
-                    Print
-                </button>
+                    <TextField
+                        variant="outlined"
+                        placeholder="Enter Student Number"
+                        size="small"
+                        value={studentNumber}
+                        onChange={(e) => {
+                            setStudentNumber(e.target.value);
+                            setSearchQuery(e.target.value);
+                        }}
+                        InputProps={{ startAdornment: <Search sx={{ mr: 1 }} /> }}
+                        sx={{
+                            width: { xs: "100%", sm: "425px" },
+                            background: "white",
+                        }}
+                    />
+
+                    <button
+                        onClick={printDiv}
+                        className="bg-maroon-500 w-[10rem] h-[3rem] text-[18px] text-white rounded"
+                    >
+                        Print
+                    </button>
+                </Box>
             </Box>
 
             <hr style={{ border: "1px solid #ccc", width: "100%" }} />
             <br />
+
 
             <style>
                 {`
@@ -332,24 +375,115 @@ const ReportOfGrade = () => {
                 </Box>
             </TableContainer>
 
-            <Box className="print-container" style={{ paddingRight: "1.5rem", marginTop: "5rem", paddingBottom: "1.5rem", maxWidth: "600px" }} ref={divToPrintRef}>
-                <Box style={{ display: "flex", alignItems: "center", width: "80rem", justifyContent: "center" }}>
-                    <Box style={{ paddingTop: "1.5rem", marginLeft: "-10rem", paddingRight: "3rem" }}>
-                        <img src={EaristLogo} alt="" style={{ width: "8rem", height: "8rem" }} />
+            <Box
+                className="print-container"
+                style={{
+                    paddingRight: "1.5rem",
+                    marginTop: "5rem",
+                    paddingBottom: "1.5rem",
+                    maxWidth: "600px",
+                }}
+                ref={divToPrintRef}
+            >
+                <Box
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        width: "70rem",
+                        justifyContent: "center",
+                        gap: "0.5rem", // ✅ adds spacing between logo and text
+                    }}
+                >
+                    {/* LEFT - Logo */}
+                    <Box
+                        style={{
+                            paddingTop: "1.5rem",
+                            paddingRight: "3rem",
+                        }}
+                    >
+                        <img
+                            src={fetchedLogo || EaristLogo} // ✅ Use dynamic logo with fallback
+                            alt="School Logo"
+                            style={{
+                                width: "8rem",
+                                height: "8rem",
+                                display: "block",
+                                objectFit: "cover",
+                                borderRadius: "50%",
+                            }}
+                        />
                     </Box>
-                    <Box style={{ marginTop: "1.5rem", }}>
-                        <Typography style={{ textAlign: "center" }}>
-                            Republic of the Philippines
-                        </Typography>
-                        <Typography style={{ textAlign: "center", marginTop: "0rem", lineHeight: "1", fontSize: "1.6rem", letterSpacing: "-1px", fontWeight: "600" }}>
-                            EULOGIO "AMANG" RODRIGUEZ <br />
-                            INSTITUTE OF SCIENCE AND TECHNOLOGY
-                        </Typography>
-                        <Typography style={{ textAlign: "center", }}>
-                            Nagtahan, Sampaloc, Manila
-                        </Typography>
+
+                    {/* CENTER - School Info */}
+                    <Box style={{ marginTop: "1.5rem" }}>
+                        <td
+                            colSpan={15}
+                            style={{
+                                textAlign: "center",
+                                fontFamily: "Arial",
+                                fontSize: "10px",
+                                lineHeight: "1.5",
+                            }}
+                        >
+                            <div
+                                style={{
+                                    fontSize: "12px",
+                                    letterSpacing: "1px",
+                                }}
+                            >
+                                Republic of the Philippines
+                            </div>
+
+                            {/* ✅ Dynamically split company name into two lines */}
+                            {companyName ? (
+                                (() => {
+                                    const name = companyName.trim();
+                                    const words = name.split(" ");
+                                    const middleIndex = Math.ceil(words.length / 2);
+                                    const firstLine = words.slice(0, middleIndex).join(" ");
+                                    const secondLine = words.slice(middleIndex).join(" ");
+
+                                    return (
+                                        <>
+                                            <Typography
+                                                style={{
+                                                    textAlign: "center",
+                                                    marginTop: "0rem",
+                                                    lineHeight: "1",
+                                                    fontSize: "1.6rem",
+                                                    letterSpacing: "-1px",
+                                                    fontWeight: "600",
+                                                    fontFamily: "Times New Roman",
+                                                }}
+                                            >
+                                                {firstLine} <br />
+                                                {secondLine}
+                                            </Typography>
+
+                                            {/* ✅ Dynamic Campus Address */}
+                                            {campusAddress && (
+                                                <Typography
+                                                    style={{
+                                                        mt: 1,
+                                                        textAlign: "center",
+                                                        fontSize: "12px",
+                                                        letterSpacing: "1px",
+                                                        
+                                                    }}
+                                                >
+                                                    {campusAddress}
+                                                </Typography>
+                                            )}
+                                        </>
+                                    );
+                                })()
+                            ) : (
+                                <div style={{ height: "24px" }}></div>
+                            )}
+                        </td>
                     </Box>
                 </Box>
+
 
                 {filteredStudents.length > 0 && (
                     <>
@@ -360,7 +494,7 @@ const ReportOfGrade = () => {
 
                 <Box style={{ display: "flex" }}>
                     <Box>
-                        <Box sx={{ padding: "1rem", marginLeft: "1rem", width: "80rem" }}>
+                        <Box sx={{ padding: "1rem", marginLeft: "1rem", width: "70rem" }}>
                             <Box sx={{ display: "flex" }}>
                                 <Box style={{ display: "flex", width: "38rem" }}>
                                     <Typography style={{ width: "9rem", fontSize: "1.05rem", letterSpacing: "-1px" }}>Full Name:</Typography>

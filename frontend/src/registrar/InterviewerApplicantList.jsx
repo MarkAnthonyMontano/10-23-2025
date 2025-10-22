@@ -129,7 +129,19 @@ const InterviewerApplicantList = () => {
     // ✅ Dynamically load logo and company info
     const logoSrc = fetchedLogo || EaristLogo;
     const name = companyName?.trim() || "No Company Name Available";
-    const campus = settings?.campus_address || "Nagtahan St. Sampaloc - Manila";
+    // ✅ Use the saved address from settings (dropdown or custom)
+    let campus = "";
+
+    if (settings?.campus_address) {
+      // If settings already has the custom or dropdown address stored
+      campus = settings.campus_address;
+    } else if (settings?.address) {
+      // Fallback if your settings object uses 'address' instead of 'campus_address'
+      campus = settings.address;
+    } else {
+      // Default fallback only if both are missing
+      campus = "No address set in Settings";
+    }
 
     // ✅ Automatically split company name into two balanced lines
     const words = name.split(" ");
@@ -165,7 +177,7 @@ const InterviewerApplicantList = () => {
             height: 120px;
             border-radius: 50%;
             object-fit: cover;
-            border: 2px solid black;
+          
           }
           table {
             border-collapse: collapse;

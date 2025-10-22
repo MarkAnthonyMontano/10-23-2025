@@ -11,7 +11,7 @@ import { FcPrint } from "react-icons/fc";
 import axios from "axios";
 
 const StudentAdmissionServices = () => {
-     const settings = useContext(SettingsContext);
+    const settings = useContext(SettingsContext);
     const [fetchedLogo, setFetchedLogo] = useState(null);
     const [companyName, setCompanyName] = useState("");
 
@@ -92,18 +92,16 @@ const StudentAdmissionServices = () => {
     });
 
 
+
+
+    const [campusAddress, setCampusAddress] = useState("");
+
     useEffect(() => {
-        console.log("Fetched campus:", person.campus);
-    }, [person]);
+        if (settings && settings.address) {
+            setCampusAddress(settings.address);
+        }
+    }, [settings]);
 
-
-    const campusAddresses = {
-        0: "Nagtahan St. Sampaloc, Manila",
-        1: "Poblacion 5, Congressional Road, General Mariano Alvarez,",
-    };
-
-
-    const campusAddress = campusAddresses[person?.campus] || "";
 
     // ✅ Fetch person data from backend
     const fetchPersonData = async (id) => {
@@ -119,29 +117,29 @@ const StudentAdmissionServices = () => {
     const [user, setUser] = useState("");
     const [userRole, setUserRole] = useState("");
 
-   
-     useEffect(() => {
-       const storedUser = localStorage.getItem("email");
-       const storedRole = localStorage.getItem("role");
-       const storedID = localStorage.getItem("person_id");
-   
-       if (storedUser && storedRole && storedID) {
-         setUser(storedUser);
-         setUserRole(storedRole);
-         setUserID(storedID);
-   
-         if (storedRole === "applicant" || storedRole === "registrar" || storedRole === "student") {
-           fetchPersonData(storedID);
-         } else {
-           window.location.href = "/login";
-         }
-       } else {
-         window.location.href = "/login";
-       }
-     }, []);
-   
-   
-   
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem("email");
+        const storedRole = localStorage.getItem("role");
+        const storedID = localStorage.getItem("person_id");
+
+        if (storedUser && storedRole && storedID) {
+            setUser(storedUser);
+            setUserRole(storedRole);
+            setUserID(storedID);
+
+            if (storedRole === "applicant" || storedRole === "registrar" || storedRole === "student") {
+                fetchPersonData(storedID);
+            } else {
+                window.location.href = "/login";
+            }
+        } else {
+            window.location.href = "/login";
+        }
+    }, []);
+
+
+
 
 
 

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 21, 2025 at 11:29 AM
+-- Generation Time: Oct 22, 2025 at 03:39 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -154,10 +154,7 @@ INSERT INTO `course_table` (`course_id`, `course_code`, `course_description`, `c
 (78, 'GELIFEWR', 'Life And Work of Rizal', 2, 0),
 (79, 'GELIFEWR', 'Life And Work of Rizal', 2, 0),
 (80, 'DATANALY', 'Data Analytics ', 3, 0),
-(81, 'ITTHESIS', 'THESIS 2', 2, 1),
-(82, 'cd', 'cedrick', 1, 0),
-(83, 'll', 'llloyd', 0, 0),
-(84, 'dc', 'cedrick', 0, 0);
+(81, 'ITTHESIS', 'THESIS 2', 2, 1);
 
 -- --------------------------------------------------------
 
@@ -177,10 +174,10 @@ CREATE TABLE `curriculum_table` (
 --
 
 INSERT INTO `curriculum_table` (`curriculum_id`, `year_id`, `program_id`, `lock_status`) VALUES
-(1, 1, 1, 0),
-(2, 2, 2, 0),
-(3, 3, 3, 0),
-(4, 4, 4, 0),
+(1, 1, 1, 1),
+(2, 2, 2, 1),
+(3, 3, 3, 1),
+(4, 4, 4, 1),
 (5, 5, 5, 0),
 (6, 6, 6, 0),
 (7, 7, 7, 0),
@@ -1685,7 +1682,7 @@ CREATE TABLE `program_tagging_table` (
 --
 
 INSERT INTO `program_tagging_table` (`program_tagging_id`, `curriculum_id`, `year_level_id`, `semester_id`, `course_id`) VALUES
-(1, 1, 1, 1, 1),
+(1, 1, 3, 1, 1),
 (2, 1, 1, 1, 2),
 (3, 1, 1, 1, 3),
 (4, 1, 1, 1, 4),
@@ -1763,8 +1760,7 @@ INSERT INTO `program_tagging_table` (`program_tagging_id`, `curriculum_id`, `yea
 (76, 1, 4, 1, 76),
 (77, 1, 4, 2, 77),
 (78, 2, 3, 2, 71),
-(79, 4, 1, 2, 2),
-(80, 1, 2, 2, 1);
+(79, 4, 1, 2, 2);
 
 -- --------------------------------------------------------
 

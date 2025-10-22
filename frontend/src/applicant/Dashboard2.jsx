@@ -709,7 +709,7 @@ const Dashboard2 = (props) => {
                         required
                         placeholder="Enter Father Last Name"
                         name="father_family_name"
-                        value={person.father_family_name}
+                        value={person.father_family_name || ""}
                         onChange={handleChange}
                         onBlur={() => handleUpdate(person)}
                         error={errors.father_family_name} helperText={errors.father_family_name ? "This field is required." : ""}
@@ -723,7 +723,7 @@ const Dashboard2 = (props) => {
                         required
                         name="father_given_name"
                         placeholder="Enter Father First Name"
-                        value={person.father_given_name}
+                        value={person.father_given_name || ""}
                         onChange={handleChange}
                         onBlur={() => handleUpdate(person)}
                         error={errors.father_given_name} helperText={errors.father_given_name ? "This field is required." : ""}
@@ -737,7 +737,7 @@ const Dashboard2 = (props) => {
                         required
                         name="father_middle_name"
                         placeholder="Enter Father Middle Name"
-                        value={person.father_middle_name}
+                        value={person.father_middle_name || ""}
                         onChange={handleChange}
                         onBlur={() => handleUpdate(person)}
                         error={errors.father_middle_name} helperText={errors.father_middle_name ? "This field is required." : ""}
@@ -779,10 +779,10 @@ const Dashboard2 = (props) => {
                         required
                         name="father_nickname"
                         placeholder="Enter Father Nickname"
-                        value={person.father_nickname}
+                        value={person.father_nickname || ""}
                         onChange={handleChange}
                         onBlur={() => handleUpdate(person)}
-                        error={errors.father_nickname} helperText={errors.father_nickname ? "This field is required." : ""}
+                        error={errors.father_nickname } helperText={errors.father_nickname ? "This field is required." : ""}
                       />
                     </Box>
                   </Box>
@@ -836,7 +836,7 @@ const Dashboard2 = (props) => {
                           size="small"
                           placeholder="Enter Father Education Level"
                           name="father_education_level"
-                          value={person.father_education_level}
+                          value={person.father_education_level || ""}
                           onChange={handleChange}
                           onBlur={() => handleUpdate(person)}
                           error={errors.father_education_level}
@@ -851,7 +851,7 @@ const Dashboard2 = (props) => {
                           size="small"
                           name="father_last_school"
                           placeholder="Enter Father Last School"
-                          value={person.father_last_school}
+                          value={person.father_last_school || ""}
                           onChange={handleChange}
                           onBlur={() => handleUpdate(person)}
                           error={errors.father_last_school}
@@ -866,7 +866,7 @@ const Dashboard2 = (props) => {
                           size="small"
                           name="father_course"
                           placeholder="Enter Father Course"
-                          value={person.father_course}
+                          value={person.father_course || ""}
                           onChange={handleChange}
                           onBlur={() => handleUpdate(person)}
                           error={errors.father_course}
@@ -881,7 +881,7 @@ const Dashboard2 = (props) => {
                           size="small"
                           name="father_year_graduated"
                           placeholder="Enter Father Year Graduated"
-                          value={person.father_year_graduated}
+                          value={person.father_year_graduated || ""}
                           onChange={handleChange}
                           onBlur={() => handleUpdate(person)}
                           error={errors.father_year_graduated}
@@ -896,7 +896,7 @@ const Dashboard2 = (props) => {
                           size="small"
                           name="father_school_address"
                           placeholder="Enter Father School Address"
-                          value={person.father_school_address}
+                          value={person.father_school_address || ""}
                           onChange={handleChange}
                           onBlur={() => handleUpdate(person)}
                           error={errors.father_school_address}
@@ -922,7 +922,7 @@ const Dashboard2 = (props) => {
                         required
                         name="father_contact"
                         placeholder="Enter Father Contact"
-                        value={person.father_contact}
+                        value={person.father_contact || ""}
                         onChange={handleChange}
                         onBlur={() => handleUpdate(person)}
                         error={errors.father_contact} helperText={errors.father_contact ? "This field is required." : ""}
@@ -935,7 +935,7 @@ const Dashboard2 = (props) => {
                         size="small"
                         required
                         name="father_occupation"
-                        value={person.father_occupation}
+                        value={person.father_occupation || ""}
                         placeholder="Enter Father Occupation"
                         onChange={handleChange}
                         onBlur={() => handleUpdate(person)}
@@ -950,7 +950,7 @@ const Dashboard2 = (props) => {
                         required
                         name="father_employer"
                         placeholder="Enter Father Employer"
-                        value={person.father_employer}
+                        value={person.father_employer || ""}
                         onChange={handleChange}
                         onBlur={() => handleUpdate(person)}
                         error={errors.father_employer} helperText={errors.father_employer ? "This field is required." : ""}
@@ -965,7 +965,7 @@ const Dashboard2 = (props) => {
                         required
                         name="father_income"
                         placeholder="Enter Father Income"
-                        value={person.father_income}
+                        value={person.father_income || ""}
                         onChange={handleChange}
                         onBlur={() => handleUpdate(person)}
                         error={errors.father_income}
@@ -982,7 +982,7 @@ const Dashboard2 = (props) => {
                       required
                       name="father_email"
                       placeholder="Enter your Father Email Address (e.g., username@gmail.com)"
-                      value={person.father_email}
+                      value={person.father_email || ""}
                       onChange={handleChange}
                       onBlur={() => handleUpdate(person)}
 
@@ -1003,7 +1003,7 @@ const Dashboard2 = (props) => {
                 control={
                   <Checkbox
                     name="mother_deceased"
-                    value={person.mother_deceased} // 👈 Added value
+                    value={person.mother_deceased || ""} // 👈 Added value
                     checked={person.mother_deceased === 1}
                     onChange={(e) => {
                       const checked = e.target.checked;
@@ -1036,7 +1036,7 @@ const Dashboard2 = (props) => {
                         required
                         name="mother_family_name"
                         placeholder="Enter your Mother Last Name"
-                        value={person.mother_family_name}
+                        value={person.mother_family_name || ""}
                         onChange={handleChange}
                         onBlur={() => handleUpdate(person)}
                         error={errors.mother_family_name}
@@ -1052,7 +1052,7 @@ const Dashboard2 = (props) => {
                         required
                         name="mother_given_name"
                         placeholder="Enter your Mother First Name"
-                        value={person.mother_given_name}
+                        value={person.mother_given_name || ""}
                         onChange={handleChange}
                         onBlur={() => handleUpdate(person)}
                         error={errors.mother_given_name}
@@ -1068,7 +1068,7 @@ const Dashboard2 = (props) => {
                         required
                         name="mother_middle_name"
                         placeholder="Enter your Mother Middle Name"
-                        value={person.mother_middle_name}
+                        value={person.mother_middle_name || ""}
                         onChange={handleChange}
                         onBlur={() => handleUpdate(person)}
                         error={errors.mother_middle_name}
@@ -1112,7 +1112,7 @@ const Dashboard2 = (props) => {
                         required
                         name="mother_nickname"
                         placeholder="Enter your Mother Nickname"
-                        value={person.mother_nickname}
+                        value={person.mother_nickname || ""}
                         onChange={handleChange}
                         onBlur={() => handleUpdate(person)}
                         error={errors.mother_nickname}
@@ -1169,7 +1169,7 @@ const Dashboard2 = (props) => {
                           size="small"
                           name="mother_education_level"
                           placeholder="Enter your Mother Education Level"
-                          value={person.mother_education_level}
+                          value={person.mother_education_level || ""}
                           onChange={handleChange}
                           onBlur={() => handleUpdate(person)}
                           error={errors.mother_education_level}
@@ -1184,7 +1184,7 @@ const Dashboard2 = (props) => {
                           size="small"
                           name="mother_last_school"
                           placeholder="Enter your Mother Last School Attended"
-                          value={person.mother_last_school}
+                          value={person.mother_last_school || ""}
                           onChange={handleChange}
                           onBlur={() => handleUpdate(person)}
                           error={errors.mother_last_school}
@@ -1199,7 +1199,7 @@ const Dashboard2 = (props) => {
                           size="small"
                           name="mother_course"
                           placeholder="Enter your Mother Course"
-                          value={person.mother_course}
+                          value={person.mother_course || ""}
                           onChange={handleChange}
                           onBlur={() => handleUpdate(person)}
                           error={errors.mother_course}
@@ -1214,7 +1214,7 @@ const Dashboard2 = (props) => {
                           size="small"
                           name="mother_year_graduated"
                           placeholder="Enter your Mother Year Graduated"
-                          value={person.mother_year_graduated}
+                          value={person.mother_year_graduated || ""}
                           onChange={handleChange}
                           onBlur={() => handleUpdate(person)}
                           error={errors.mother_year_graduated}
@@ -1229,7 +1229,7 @@ const Dashboard2 = (props) => {
                           size="small"
                           name="mother_school_address"
                           placeholder="Enter your Mother School Address"
-                          value={person.mother_school_address}
+                          value={person.mother_school_address || ""}
                           onChange={handleChange}
                           onBlur={() => handleUpdate(person)}
                           error={errors.mother_school_address}
@@ -1254,7 +1254,7 @@ const Dashboard2 = (props) => {
                         required
                         name="mother_contact"
                         placeholder="Enter your Mother Contact"
-                        value={person.mother_contact}
+                        value={person.mother_contact || ""}
                         onChange={handleChange}
                         onBlur={() => handleUpdate(person)}
                         error={errors.mother_contact} helperText={errors.mother_contact ? "This field is required." : ""}
@@ -1268,7 +1268,7 @@ const Dashboard2 = (props) => {
                         required
                         name="mother_occupation"
                         placeholder="Enter your Mother Occupation"
-                        value={person.mother_occupation}
+                        value={person.mother_occupation || ""}
                         onChange={handleChange}
                         onBlur={() => handleUpdate(person)}
                         error={errors.mother_occupation} helperText={errors.mother_occupation ? "This field is required." : ""}
@@ -1282,7 +1282,7 @@ const Dashboard2 = (props) => {
                         required
                         name="mother_employer"
                         placeholder="Enter your Mother Employer"
-                        value={person.mother_employer}
+                        value={person.mother_employer || ""}
                         onChange={handleChange}
                         onBlur={() => handleUpdate(person)}
                         error={errors.mother_employer} helperText={errors.mother_employer ? "This field is required." : ""}
@@ -1298,7 +1298,7 @@ const Dashboard2 = (props) => {
                         required
                         name="mother_income"
                         placeholder="Enter your Mother Income"
-                        value={person.mother_income}
+                        value={person.mother_income || ""}
                         onChange={handleChange}
                         onBlur={() => handleUpdate(person)}
                         error={errors.mother_income}
@@ -1315,7 +1315,7 @@ const Dashboard2 = (props) => {
                       required
                       name="mother_email"
                       placeholder="Enter your Mother Email Address (e.g., username@gmail.com)"
-                      value={person.mother_email}
+                      value={person.mother_email || ""}
                       onChange={handleChange}
                       onBlur={() => handleUpdate(person)}
 
@@ -1373,7 +1373,7 @@ const Dashboard2 = (props) => {
                   required
                   name="guardian_family_name"
                   placeholder="Enter your Guardian Family Name"
-                  value={person.guardian_family_name}
+                  value={person.guardian_family_name || ""}
                   onChange={handleChange}
                   onBlur={() => handleUpdate(person)}
                   error={!!errors.guardian_family_name}
@@ -1390,7 +1390,7 @@ const Dashboard2 = (props) => {
                   required
                   name="guardian_given_name"
                   placeholder="Enter your Guardian First Name"
-                  value={person.guardian_given_name}
+                  value={person.guardian_given_name || ""}
                   onChange={handleChange}
                   onBlur={() => handleUpdate(person)}
                   error={!!errors.guardian_given_name}
@@ -1407,7 +1407,7 @@ const Dashboard2 = (props) => {
                   required
                   name="guardian_middle_name"
                   placeholder="Enter your Guardian Middle Name"
-                  value={person.guardian_middle_name}
+                  value={person.guardian_middle_name || ""}
                   onChange={handleChange}
                   onBlur={() => handleUpdate(person)}
                   error={!!errors.guardian_middle_name}
@@ -1453,7 +1453,7 @@ const Dashboard2 = (props) => {
                   required
                   name="guardian_nickname"
                   placeholder="Enter your Guardian Nickname"
-                  value={person.guardian_nickname}
+                  value={person.guardian_nickname || ""}
                   onChange={handleChange}
                   onBlur={() => handleUpdate(person)}
                   error={!!errors.guardian_nickname}
@@ -1474,7 +1474,7 @@ const Dashboard2 = (props) => {
                 required
                 name="guardian_address"
                 placeholder="Enter your Guardian Address"
-                value={person.guardian_address}
+                value={person.guardian_address || ""}
                 onChange={handleChange}
                 onBlur={() => handleUpdate(person)}
                 error={errors.guardian_address}
@@ -1491,7 +1491,7 @@ const Dashboard2 = (props) => {
                   required
                   name="guardian_contact"
                   placeholder="Enter your Guardian Contact Number"
-                  value={person.guardian_contact}
+                  value={person.guardian_contact || ""}
                   onChange={handleChange}
                   onBlur={() => handleUpdate(person)}
                   error={errors.guardian_contact} helperText={errors.guardian_contact ? "This field is required." : ""}
@@ -1506,7 +1506,7 @@ const Dashboard2 = (props) => {
                   required
                   name="guardian_email"
                   placeholder="Enter your Guardian Email Address (e.g., username@gmail.com)"
-                  value={person.guardian_email}
+                  value={person.guardian_email || ""}
                   onChange={handleChange}
                   onBlur={() => handleUpdate(person)}
 

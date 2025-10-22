@@ -13,9 +13,9 @@ import {
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 
-
 function Settings({ onUpdate }) {
     const [companyName, setCompanyName] = useState("");
+    const [address, setAddress] = useState("");
     const [logo, setLogo] = useState(null);
     const [preview, setPreview] = useState(null);
     const [headerColor, setHeaderColor] = useState("#ffffff");
@@ -28,12 +28,14 @@ function Settings({ onUpdate }) {
             .then((response) => {
                 const {
                     company_name,
+                    address,
                     logo_url,
                     header_color,
                     footer_text,
                     footer_color,
                 } = response.data;
                 setCompanyName(company_name || "");
+                setAddress(address || "");
                 setPreview(logo_url || null);
                 setHeaderColor(header_color || "#ffffff");
                 setFooterText(footer_text || "");
@@ -46,6 +48,7 @@ function Settings({ onUpdate }) {
         event.preventDefault();
         const formData = new FormData();
         formData.append("company_name", companyName || "");
+        formData.append("address", address || "");
         formData.append("logo", logo);
         formData.append("header_color", headerColor || "#ffffff");
         formData.append("footer_text", footerText || "");
@@ -67,15 +70,20 @@ function Settings({ onUpdate }) {
     };
 
     return (
-        <Box sx={{ height: "calc(100vh - 150px)",    display: "flex",
-                flexDirection: "column",
+        <Box
+            sx={{
+                height: "calc(100vh - 120px)",
+                display: "flex",
+                justifyContent: "center",
                 alignItems: "center",
-                justifyContent: "center", overflowY: "auto", paddingRight: 1, backgroundColor: "transparent" }}>
-
+                backgroundColor: "transparent",
+                overflowY: "auto",
+            }}
+        >
             <Paper
                 elevation={6}
                 sx={{
-                    p: 4,
+                    p: 2,
                     width: 550,
                     borderRadius: 4,
                     backgroundColor: "#fff",
@@ -83,7 +91,7 @@ function Settings({ onUpdate }) {
                     boxShadow: "0px 4px 20px rgba(0,0,0,0.1)",
                 }}
             >
-                <Box textAlign="center" mb={3}>
+                <Box textAlign="center" mb={1}>
                     <SettingsIcon
                         sx={{
                             fontSize: 80,
@@ -100,13 +108,13 @@ function Settings({ onUpdate }) {
                     >
                         Customize Your Settings
                     </Typography>
-
                 </Box>
 
                 <Divider sx={{ mb: 1 }} />
 
                 <form onSubmit={handleSubmit}>
-                    <Box mb={2}>
+                    {/* ✅ Company Name */}
+                    <Box mb={1}>
                         <InputLabel>Company Name</InputLabel>
                         <TextField
                             value={companyName}
@@ -117,6 +125,19 @@ function Settings({ onUpdate }) {
                         />
                     </Box>
 
+                    {/* ✅ Address */}
+                    <Box mb={1}>
+                        <InputLabel>Address</InputLabel>
+                        <TextField
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                            fullWidth
+                            size="small"
+                            variant="outlined"
+                        />
+                    </Box>
+
+                    {/* ✅ Logo Upload */}
                     <Box mb={2}>
                         <InputLabel>Logo</InputLabel>
                         <Input
@@ -135,7 +156,7 @@ function Settings({ onUpdate }) {
                                 sx={{
                                     width: 80,
                                     height: 80,
-                                    mt: 2,
+                                    mt: 1,
                                     mx: "auto",
                                     border: "2px solid #1976d2",
                                 }}
@@ -143,7 +164,8 @@ function Settings({ onUpdate }) {
                         )}
                     </Box>
 
-                    <Box mb={2}>
+                    {/* ✅ Header Color */}
+                    <Box mb={1}>
                         <InputLabel>Header Color</InputLabel>
                         <Input
                             type="color"
@@ -154,7 +176,8 @@ function Settings({ onUpdate }) {
                         />
                     </Box>
 
-                    <Box mb={2}>
+                    {/* ✅ Footer Text */}
+                    <Box mb={1}>
                         <InputLabel>Footer Text</InputLabel>
                         <TextField
                             value={footerText}
@@ -165,7 +188,8 @@ function Settings({ onUpdate }) {
                         />
                     </Box>
 
-                    <Box mb={3}>
+                    {/* ✅ Footer Color */}
+                    <Box mb={1}>
                         <InputLabel>Footer Color</InputLabel>
                         <Input
                             type="color"
@@ -176,6 +200,7 @@ function Settings({ onUpdate }) {
                         />
                     </Box>
 
+                    {/* ✅ Save Button */}
                     <Button
                         type="submit"
                         variant="contained"
@@ -195,6 +220,7 @@ function Settings({ onUpdate }) {
             </Paper>
         </Box>
     );
+
 }
 
 export default Settings;

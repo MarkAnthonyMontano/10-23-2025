@@ -500,123 +500,151 @@ const QualifyingExamScore = () => {
     const divToPrintRef = useRef();
 
 
-
     const printDiv = () => {
-        // ✅ Determine campus address dynamically
-        let campusAddress = "";
-        if (person?.campus === "0") {
-            campusAddress = settings?.campus_address || "Manila Campus";
-        } else if (person?.campus === "1") {
-            campusAddress = settings?.campus_address || "Cavite Campus";
-        }
+        const newWin = window.open("", "Print-Window");
+        newWin.document.open();
 
         // ✅ Dynamic logo and company name
         const logoSrc = fetchedLogo || EaristLogo;
-        const name = companyName?.trim() || ""; // no hardcoded fallback
+        const name = companyName?.trim() || "No Company Name Available";
 
-        // ✅ Split the name into 2 lines automatically
+        // ✅ Split name into two balanced lines
         const words = name.split(" ");
-        const middle = Math.ceil(words.length / 2);
-        const firstLine = words.slice(0, middle).join(" ");
-        const secondLine = words.slice(middle).join(" ");
+        const middleIndex = Math.ceil(words.length / 2);
+        const firstLine = words.slice(0, middleIndex).join(" ");
+        const secondLine = words.slice(middleIndex).join(" ");
 
-        // ✅ Generate printable window
-        const newWin = window.open("", "Print-Window");
-        newWin.document.open();
-        newWin.document.write(`
-    <html>
-      <head>
-        <title>Qualifying Examination Score</title>
-        <style>
-          @page { size: A4; margin: 10mm; }
-          body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-          .print-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-          }
-          .print-header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            width: 100%;
-          }
-          .print-header img {
-            position: absolute;
-            left: 0;
-            margin-left: 10px;
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-      
-          }
-          table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 20px;
-          }
-          th, td {
-            border: 0.5px solid black;
-            padding: 4px 6px;
-            font-size: 12px;
-            text-align: center;
-          }
-          th {
-            background-color: #800000;
-            color: white;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-          }
-        </style>
-      </head>
-      <body onload="setTimeout(() => { window.print(); window.close(); }, 500)">
-        <div class="print-container">
-          <!-- ✅ Header -->
-          <div class="print-header">
-            <img src="${logoSrc}" alt="School Logo" />
-            <div>
-              <div>Republic of the Philippines</div>
-              ${name
-                ? `
-                    <b style="letter-spacing: 1px; font-size: 20px; font-family: 'Times New Roman', serif;">
-                      ${firstLine}
-                    </b>
-                    ${secondLine
-                    ? `<div style="letter-spacing: 1px; font-size: 20px; font-family: 'Times New Roman', serif;">
-                             <b>${secondLine}</b>
-                           </div>`
-                    : ""
-                }
-                  `
+        // ✅ Dynamic campus address (dropdown or custom from Settings)
+        let campusAddress = "";
+        if (settings?.campus_address) {
+            campusAddress = settings.campus_address;
+        } else if (settings?.address) {
+            campusAddress = settings.address;
+        } else {
+            campusAddress = "No address set in Settings";
+        }
+
+        // ✅ HTML print layout
+        const htmlContent = `
+  <html>
+    <head>
+      <title>Qualifying Examination Score</title>
+    <style>
+  @page { size: A4; margin: 10mm; }
+  body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+
+  .print-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0 10px; /* ✅ ensures right/left borders are not cut off */
+  }
+
+  .print-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 100%;
+  }
+
+  .print-header img {
+    position: absolute;
+    left: 0;
+    margin-left: 10px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  /* ✅ Consistent and thicker table borders */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 20px;
+  border: 1.5px solid black;
+  table-layout: fixed; /* ✅ lock column widths */
+}
+th, td {
+  border: 1.5px solid black;
+  padding: 6px;
+  font-size: 12px;
+  text-align: center;
+  word-wrap: break-word; /* ✅ prevent overflow */
+  box-sizing: border-box;
+}
+
+  /* ✅ Force right border to print cleanly */
+  th:last-child,
+  td:last-child {
+    border-right: 1.2px solid maroon !important;
+  }
+
+  /* ✅ Slight padding helps prevent printer cutoff */
+  @media print {
+    body {
+      margin-right: 5mm;
+      margin-left: 5mm;
+    }
+  }
+
+  th {
+    background-color: #800000;
+    color: white;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+</style>
+
+
+    </head>
+    <body onload="setTimeout(() => { window.print(); window.close(); }, 500)">
+      <div class="print-container">
+        <!-- ✅ HEADER -->
+        <div class="print-header">
+          <img src="${logoSrc}" alt="School Logo" />
+          <div>
+            <div>Republic of the Philippines</div>
+
+            <!-- ✅ Dynamic Company Name -->
+            <b style="letter-spacing: 1px; font-size: 20px; font-family: 'Times New Roman', serif;">
+              ${firstLine}
+            </b>
+            ${secondLine
+                ? `<div style="letter-spacing: 1px; font-size: 20px; font-family: 'Times New Roman', serif;">
+                     <b>${secondLine}</b>
+                   </div>`
                 : ""
             }
-              <div style="font-size: 12px;">${campusAddress}</div>
-              <div style="margin-top: 30px;">
-                <b style="font-size: 24px; letter-spacing: 1px;">
-                  QUALIFYING EXAMINATION SCORE
-                </b>
-              </div>
+
+            <!-- ✅ Dynamic Address -->
+            <div style="font-size: 12px;">${campusAddress}</div>
+
+            <div style="margin-top: 30px;">
+              <b style="font-size: 24px; letter-spacing: 1px;">
+                QUALIFYING EXAMINATION SCORE
+              </b>
             </div>
           </div>
+        </div>
 
-          <!-- ✅ Table -->
-          <table>
-            <thead>
-              <tr>
-                <th style="width:10%">Applicant ID</th>
-                <th class="name-col">Applicant Name</th>
-                <th style="width:15%">Program</th>
-                <th style="width:7%">Qualifying Exam Score</th>
-                <th style="width:7%">Qualifying Interview Score</th>
-                <th style="width:7%">Total Ave</th>
-                <th style="width:7%">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${filteredPersons
+        <!-- ✅ TABLE -->
+        <table>
+          <thead>
+            <tr>
+           <th style="width: 12%;">Applicant ID</th>
+<th style="width: 25%;">Applicant Name</th>
+<th style="width: 13%;">Program</th>
+<th style="width: 10%;">Qualifying Exam Score</th>
+<th style="width: 10%;">Qualifying Interview Score</th>
+<th style="width: 10%;">Total Ave</th>
+<th style="width: 10%;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredPersons
                 .map((person) => {
                     const qualifyingExam =
                         editScores[person.person_id]?.qualifying_exam_score ??
@@ -630,29 +658,29 @@ const QualifyingExamScore = () => {
                         (Number(qualifyingExam) + Number(qualifyingInterview)) / 2;
 
                     return `
-                    <tr>
-                      <td>${person.applicant_number ?? "N/A"}</td>
-                      <td class="name-col">${person.last_name}, ${person.first_name} ${person.middle_name ?? ""} ${person.extension ?? ""}</td>
-                      <td>${curriculumOptions.find(
+                <tr>
+                  <td>${person.applicant_number ?? "N/A"}</td>
+                  <td class="name-col">${person.last_name}, ${person.first_name} ${person.middle_name ?? ""} ${person.extension ?? ""}</td>
+                  <td>${curriculumOptions.find(
                         (item) =>
-                            item.curriculum_id?.toString() ===
-                            person.program?.toString()
+                            item.curriculum_id?.toString() === person.program?.toString()
                     )?.program_code ?? "N/A"
                         }</td>
-                      <td>${qualifyingExam}</td>
-                      <td>${qualifyingInterview}</td>
-                      <td>${computedTotalAve.toFixed(2)}</td>
-                      <td>${person.college_approval_status ?? "N/A"}</td>
-                    </tr>
-                  `;
+                  <td>${qualifyingExam}</td>
+                  <td>${qualifyingInterview}</td>
+                  <td>${computedTotalAve.toFixed(2)}</td>
+                  <td>${person.college_approval_status ?? "N/A"}</td>
+                </tr>`;
                 })
                 .join("")}
-            </tbody>
-          </table>
-        </div>
-      </body>
-    </html>
-  `);
+          </tbody>
+        </table>
+      </div>
+    </body>
+  </html>
+  `;
+
+        newWin.document.write(htmlContent);
         newWin.document.close();
     };
 

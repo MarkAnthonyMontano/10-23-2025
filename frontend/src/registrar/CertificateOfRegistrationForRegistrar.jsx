@@ -89,62 +89,59 @@ const CertificateOfRegistration = forwardRef(({ student_number }, divToPrintRef)
     guardian_middle_name: "", guardian_ext: "", guardian_nickname: "", guardian_address: "", guardian_contact: "", guardian_email: "", generalAverage1: "",
   });
 
-   const [userID, setUserID] = useState("");
-    const [user, setUser] = useState("");
-    const [userRole, setUserRole] = useState("");
-    useEffect(() => {
-      console.log("Fetched campus:", person.campus);
-    }, [person]);
-  
-  
-    const campusAddresses = {
-      0: "Nagtahan St. Sampaloc, Manila",
-      1: "Poblacion 5, Congressional Road, General Mariano Alvarez",
-    };
-  
-  
-    const campusAddress = campusAddresses[person?.campus] || "";
-  
-    // ✅ Fetch person data from backend
-    const fetchPersonData = async (id) => {
-      try {
-        const res = await axios.get(`http://localhost:5000/api/person/${id}`);
-        setPerson(res.data); // make sure backend returns the correct format
-      } catch (error) {
-        console.error("Failed to fetch person:", error);
-      }
-    };
-  
-    const location = useLocation();
-    const queryParams = new URLSearchParams(location.search);
-    const queryPersonId = queryParams.get("person_id");
-  
-    // do not alter
-    useEffect(() => {
-      const storedUser = localStorage.getItem("email");
-      const storedRole = localStorage.getItem("role");
-      const loggedInPersonId = localStorage.getItem("person_id");
-      const searchedPersonId = sessionStorage.getItem("admin_edit_person_id");
-  
-      if (!storedUser || !storedRole || !loggedInPersonId) {
-        window.location.href = "/login";
-        return;
-      }
-  
-      setUser(storedUser);
-      setUserRole(storedRole);
-  
-      // Allow Applicant, Admin, SuperAdmin to view ECAT
-      const allowedRoles = ["registrar", "applicant", "student"];
-      if (allowedRoles.includes(storedRole)) {
-        const targetId = searchedPersonId || queryPersonId || loggedInPersonId;
-        setUserID(targetId);
-        fetchPersonData(targetId);
-        return;
-      }
-  
+  const [userID, setUserID] = useState("");
+  const [user, setUser] = useState("");
+  const [userRole, setUserRole] = useState("");
+
+  const [campusAddress, setCampusAddress] = useState("");
+
+  useEffect(() => {
+    if (settings && settings.address) {
+      setCampusAddress(settings.address);
+    }
+  }, [settings]);
+
+
+  // ✅ Fetch person data from backend
+  const fetchPersonData = async (id) => {
+    try {
+      const res = await axios.get(`http://localhost:5000/api/person/${id}`);
+      setPerson(res.data); // make sure backend returns the correct format
+    } catch (error) {
+      console.error("Failed to fetch person:", error);
+    }
+  };
+
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const queryPersonId = queryParams.get("person_id");
+
+  // do not alter
+  useEffect(() => {
+    const storedUser = localStorage.getItem("email");
+    const storedRole = localStorage.getItem("role");
+    const loggedInPersonId = localStorage.getItem("person_id");
+    const searchedPersonId = sessionStorage.getItem("admin_edit_person_id");
+
+    if (!storedUser || !storedRole || !loggedInPersonId) {
       window.location.href = "/login";
-    }, [queryPersonId]);
+      return;
+    }
+
+    setUser(storedUser);
+    setUserRole(storedRole);
+
+    // Allow Applicant, Admin, SuperAdmin to view ECAT
+    const allowedRoles = ["registrar", "applicant", "student"];
+    if (allowedRoles.includes(storedRole)) {
+      const targetId = searchedPersonId || queryPersonId || loggedInPersonId;
+      setUserID(targetId);
+      fetchPersonData(targetId);
+      return;
+    }
+
+    window.location.href = "/login";
+  }, [queryPersonId]);
 
 
   const [studentNumber, setStudentNumber] = useState("");

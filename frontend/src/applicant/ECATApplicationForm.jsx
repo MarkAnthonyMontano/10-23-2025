@@ -26,6 +26,14 @@ const ECATApplicationForm = () => {
     }
   }, [settings]);
 
+  const [campusAddress, setCampusAddress] = useState("");
+
+  useEffect(() => {
+    if (settings && settings.address) {
+      setCampusAddress(settings.address);
+    }
+  }, [settings]);
+
 
   const [userID, setUserID] = useState("");
   const [user, setUser] = useState("");
@@ -86,18 +94,7 @@ const ECATApplicationForm = () => {
   });
 
 
-  useEffect(() => {
-    console.log("Fetched campus:", person.campus);
-  }, [person]);
 
-
-  const campusAddresses = {
-    0: "Nagtahan St. Sampaloc, Manila",
-    1: "Poblacion 5, Congressional Road, General Mariano Alvarez,",
-  };
-
-
-  const campusAddress = campusAddresses[person?.campus] || "";
 
   // ✅ Fetch person data from backend
   const fetchPersonData = async (id) => {
@@ -1157,7 +1154,7 @@ const ECATApplicationForm = () => {
             </tr>
 
 
-             <tr style={{ fontFamily: "Times New Roman", fontSize: "12px", textAlign: "left" }}>
+            <tr style={{ fontFamily: "Times New Roman", fontSize: "12px", textAlign: "left" }}>
               <td colSpan={40}>
                 <b>Complete Address:</b>
                 <span
@@ -1168,7 +1165,7 @@ const ECATApplicationForm = () => {
                     marginLeft: "10px",
                   }}
                 >
-              
+
                 </span>
                 <b style={{ marginLeft: "10px" }}>Learner's Reference No.:</b>
                 <span

@@ -26,8 +26,6 @@ import LoginEnrollment from './components/LoginEnrollment';
 import ApplicantForgotPassword from './components/ApplicantForgotPassword';
 import RegistrarForgotPassword from './components/RegistrarForgotPassword';
 import RegistrarResetPassword from './components/RegistrarResetPassword';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
 import SideBar from './components/Sidebar';
 import ProtectedRoute from './components/ProtectedRoute';
 import RegisterProf from './components/RegisterProf';

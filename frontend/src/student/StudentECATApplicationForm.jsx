@@ -7,177 +7,174 @@ import { FcPrint } from "react-icons/fc";
 import { useLocation } from "react-router-dom";
 
 const StudentECATApplicationForm = () => {
-    const settings = useContext(SettingsContext);
-    const [fetchedLogo, setFetchedLogo] = useState(null);
-    const [companyName, setCompanyName] = useState("");
+  const settings = useContext(SettingsContext);
+  const [fetchedLogo, setFetchedLogo] = useState(null);
+  const [companyName, setCompanyName] = useState("");
 
-    useEffect(() => {
-        if (settings) {
-            // ✅ load dynamic logo
-            if (settings.logo_url) {
-                setFetchedLogo(`http://localhost:5000${settings.logo_url}`);
-            } else {
-                setFetchedLogo(EaristLogo);
-            }
+  useEffect(() => {
+    if (settings) {
+      // ✅ load dynamic logo
+      if (settings.logo_url) {
+        setFetchedLogo(`http://localhost:5000${settings.logo_url}`);
+      } else {
+        setFetchedLogo(EaristLogo);
+      }
 
-            // ✅ load dynamic name + address
-            if (settings.company_name) setCompanyName(settings.company_name);
-            if (settings.campus_address) setCampusAddress(settings.campus_address);
-        }
-    }, [settings]);
+      // ✅ load dynamic name + address
+      if (settings.company_name) setCompanyName(settings.company_name);
+      if (settings.campus_address) setCampusAddress(settings.campus_address);
+    }
+  }, [settings]);
 
-    const [userID, setUserID] = useState("");
-    const [user, setUser] = useState("");
-    const [userRole, setUserRole] = useState("");
-    const [person, setPerson] = useState({
+  const [userID, setUserID] = useState("");
+  const [user, setUser] = useState("");
+  const [userRole, setUserRole] = useState("");
+  const [person, setPerson] = useState({
 
-        profile_img: "",
-        campus: "",
-        academicProgram: "",
-        classifiedAs: "",
-        program: "",
-        program2: "",
-        program3: "",
-        yearLevel: "",
-        last_name: "",
-        first_name: "",
-        middle_name: "",
-        extension: "",
-        nickname: "",
-        height: "",
-        weight: "",
-        lrnNumber: "",
-        gender: "",
-        pwdType: "",
-        pwdId: "",
-        birthOfDate: "",
-        age: "",
-        birthPlace: "",
-        languageDialectSpoken: "",
-        citizenship: "",
-        religion: "",
-        civilStatus: "",
-        tribeEthnicGroup: "",
-        otherEthnicGroup: "",
-        cellphoneNumber: "",
-        emailAddress: "",
-        telephoneNumber: "",
-        facebookAccount: "",
-        presentStreet: "",
-        presentBarangay: "",
-        presentZipCode: "",
-        presentRegion: "",
-        presentProvince: "",
-        presentMunicipality: "",
-        presentDswdHouseholdNumber: "",
-        permanentStreet: "",
-        permanentBarangay: "",
-        permanentZipCode: "",
-        permanentRegion: "",
-        permanentProvince: "",
-        permanentMunicipality: "",
-        permanentDswdHouseholdNumber: "",
-        father_deceased: "",
-        father_family_name: "", father_given_name: "", father_middle_name: "", father_ext: "", father_contact: "", father_occupation: "",
-        father_income: "", father_email: "", mother_deceased: "", mother_family_name: "", mother_given_name: "", mother_middle_name: "",
-        mother_contact: "", mother_occupation: "", mother_income: "", guardian: "", guardian_family_name: "", guardian_given_name: "",
-        guardian_middle_name: "", guardian_ext: "", guardian_nickname: "", guardian_address: "", guardian_contact: "", guardian_email: "",
-    });
-
-
-    useEffect(() => {
-        console.log("Fetched campus:", person.campus);
-    }, [person]);
-
-
-    const campusAddresses = {
-        0: "Nagtahan St. Sampaloc, Manila",
-        1: "Blk. 3 Lot 2, 5 Congressional Rd, General Mariano Alvarez",
-    };
-
-
-    const campusAddress = campusAddresses[person?.campus] || "";
+    profile_img: "",
+    campus: "",
+    academicProgram: "",
+    classifiedAs: "",
+    program: "",
+    program2: "",
+    program3: "",
+    yearLevel: "",
+    last_name: "",
+    first_name: "",
+    middle_name: "",
+    extension: "",
+    nickname: "",
+    height: "",
+    weight: "",
+    lrnNumber: "",
+    gender: "",
+    pwdType: "",
+    pwdId: "",
+    birthOfDate: "",
+    age: "",
+    birthPlace: "",
+    languageDialectSpoken: "",
+    citizenship: "",
+    religion: "",
+    civilStatus: "",
+    tribeEthnicGroup: "",
+    otherEthnicGroup: "",
+    cellphoneNumber: "",
+    emailAddress: "",
+    telephoneNumber: "",
+    facebookAccount: "",
+    presentStreet: "",
+    presentBarangay: "",
+    presentZipCode: "",
+    presentRegion: "",
+    presentProvince: "",
+    presentMunicipality: "",
+    presentDswdHouseholdNumber: "",
+    permanentStreet: "",
+    permanentBarangay: "",
+    permanentZipCode: "",
+    permanentRegion: "",
+    permanentProvince: "",
+    permanentMunicipality: "",
+    permanentDswdHouseholdNumber: "",
+    father_deceased: "",
+    father_family_name: "", father_given_name: "", father_middle_name: "", father_ext: "", father_contact: "", father_occupation: "",
+    father_income: "", father_email: "", mother_deceased: "", mother_family_name: "", mother_given_name: "", mother_middle_name: "",
+    mother_contact: "", mother_occupation: "", mother_income: "", guardian: "", guardian_family_name: "", guardian_given_name: "",
+    guardian_middle_name: "", guardian_ext: "", guardian_nickname: "", guardian_address: "", guardian_contact: "", guardian_email: "",
+  });
 
 
 
-    const location = useLocation();
-    const queryParams = new URLSearchParams(location.search);
-    const queryPersonId = queryParams.get("person_id");
 
-    // do not alter
-    useEffect(() => {
-        const storedUser = localStorage.getItem("email");
-        const storedRole = localStorage.getItem("role");
-        const loggedInPersonId = localStorage.getItem("person_id");
-        const searchedPersonId = sessionStorage.getItem("admin_edit_person_id");
+  const [campusAddress, setCampusAddress] = useState("");
 
-        if (!storedUser || !storedRole || !loggedInPersonId) {
-            window.location.href = "/login";
-            return;
-        }
+  useEffect(() => {
+    if (settings && settings.address) {
+      setCampusAddress(settings.address);
+    }
+  }, [settings]);
 
-        setUser(storedUser);
-        setUserRole(storedRole);
 
-        // Allow Applicant, Admin, SuperAdmin to view ECAT
-        const allowedRoles = ["registrar", "applicant", "student"];
-        if (allowedRoles.includes(storedRole)) {
-            const targetId = searchedPersonId || queryPersonId || loggedInPersonId;
-            setUserID(targetId);
-            fetchPersonData(targetId);
-            return;
-        }
 
-        window.location.href = "/login";
-    }, [queryPersonId]);
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const queryPersonId = queryParams.get("person_id");
 
-    const fetchPersonData = async (id) => {
-        try {
-            const response = await axios.get(`http://localhost:5000/api/student-person-data/${id}`);
-            setPerson(response.data);
-        } catch (err) {
-            console.error("Error fetching person data:", err);
-        }
+  // do not alter
+  useEffect(() => {
+    const storedUser = localStorage.getItem("email");
+    const storedRole = localStorage.getItem("role");
+    const loggedInPersonId = localStorage.getItem("person_id");
+    const searchedPersonId = sessionStorage.getItem("admin_edit_person_id");
+
+    if (!storedUser || !storedRole || !loggedInPersonId) {
+      window.location.href = "/login";
+      return;
     }
 
+    setUser(storedUser);
+    setUserRole(storedRole);
 
-    const [shortDate, setShortDate] = useState("");
+    // Allow Applicant, Admin, SuperAdmin to view ECAT
+    const allowedRoles = ["registrar", "applicant", "student"];
+    if (allowedRoles.includes(storedRole)) {
+      const targetId = searchedPersonId || queryPersonId || loggedInPersonId;
+      setUserID(targetId);
+      fetchPersonData(targetId);
+      return;
+    }
+
+    window.location.href = "/login";
+  }, [queryPersonId]);
+
+  const fetchPersonData = async (id) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/student-person-data/${id}`);
+      setPerson(response.data);
+    } catch (err) {
+      console.error("Error fetching person data:", err);
+    }
+  }
 
 
-    useEffect(() => {
-        const updateDates = () => {
-            const now = new Date();
-
-            // Format 1: MM/DD/YYYY
-            const formattedShort = `${String(now.getMonth() + 1).padStart(2, "0")}/${String(now.getDate()).padStart(2, "0")}/${now.getFullYear()}`;
-            setShortDate(formattedShort);
-
-            // Format 2: MM DD, YYYY hh:mm:ss AM/PM
-            const day = String(now.getDate()).padStart(2, "0");
-            const month = String(now.getMonth() + 1).padStart(2, "0");
-            const year = now.getFullYear();
-            const hours = String(now.getHours() % 12 || 12).padStart(2, "0");
-            const minutes = String(now.getMinutes()).padStart(2, "0");
-            const seconds = String(now.getSeconds()).padStart(2, "0");
-            const ampm = now.getHours() >= 12 ? "PM" : "AM";
+  const [shortDate, setShortDate] = useState("");
 
 
-        };
+  useEffect(() => {
+    const updateDates = () => {
+      const now = new Date();
 
-        updateDates(); // Set initial values
-        const interval = setInterval(updateDates, 1000); // Update every second
+      // Format 1: MM/DD/YYYY
+      const formattedShort = `${String(now.getMonth() + 1).padStart(2, "0")}/${String(now.getDate()).padStart(2, "0")}/${now.getFullYear()}`;
+      setShortDate(formattedShort);
 
-        return () => clearInterval(interval); // Cleanup on unmount
-    }, []);
+      // Format 2: MM DD, YYYY hh:mm:ss AM/PM
+      const day = String(now.getDate()).padStart(2, "0");
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const year = now.getFullYear();
+      const hours = String(now.getHours() % 12 || 12).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      const seconds = String(now.getSeconds()).padStart(2, "0");
+      const ampm = now.getHours() >= 12 ? "PM" : "AM";
 
-    const divToPrintRef = useRef();
 
-    const printDiv = () => {
-        const divToPrint = divToPrintRef.current;
-        if (divToPrint) {
-            const newWin = window.open('', 'Print-Window');
-            newWin.document.open();
-            newWin.document.write(`
+    };
+
+    updateDates(); // Set initial values
+    const interval = setInterval(updateDates, 1000); // Update every second
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, []);
+
+  const divToPrintRef = useRef();
+
+  const printDiv = () => {
+    const divToPrint = divToPrintRef.current;
+    if (divToPrint) {
+      const newWin = window.open('', 'Print-Window');
+      newWin.document.open();
+      newWin.document.write(`
 <html>
   <head>
     <title>Print</title>
@@ -225,62 +222,62 @@ const StudentECATApplicationForm = () => {
 </html>
 `);
 
-            newWin.document.close();
-        } else {
-            console.error("divToPrintRef is not set.");
-        }
+      newWin.document.close();
+    } else {
+      console.error("divToPrintRef is not set.");
+    }
+  };
+
+  const [curriculumOptions, setCurriculumOptions] = useState([]);
+
+  useEffect(() => {
+    const fetchCurriculums = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/applied_program");
+        setCurriculumOptions(response.data);
+      } catch (error) {
+        console.error("Error fetching curriculum options:", error);
+      }
     };
 
-    const [curriculumOptions, setCurriculumOptions] = useState([]);
+    fetchCurriculums();
+  }, []);
 
-    useEffect(() => {
-        const fetchCurriculums = async () => {
-            try {
-                const response = await axios.get("http://localhost:5000/api/applied_program");
-                setCurriculumOptions(response.data);
-            } catch (error) {
-                console.error("Error fetching curriculum options:", error);
-            }
-        };
+  console.log("person.program:", person.program);
+  console.log("curriculumOptions:", curriculumOptions);
 
-        fetchCurriculums();
-    }, []);
+  {
+    curriculumOptions.find(
+      (item) =>
+        item?.curriculum_id?.toString() === (person?.program ?? "").toString()
+    )?.program_description || (person?.program ?? "")
 
-    console.log("person.program:", person.program);
-    console.log("curriculumOptions:", curriculumOptions);
+  }
 
-    {
-        curriculumOptions.find(
-            (item) =>
-                item?.curriculum_id?.toString() === (person?.program ?? "").toString()
-        )?.program_description || (person?.program ?? "")
 
+
+
+
+  // 🔒 Disable right-click
+  document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+  // 🔒 Block DevTools shortcuts + Ctrl+P silently
+  document.addEventListener('keydown', (e) => {
+    const isBlockedKey =
+      e.key === 'F12' || // DevTools
+      e.key === 'F11' || // Fullscreen
+      (e.ctrlKey && e.shiftKey && (e.key.toLowerCase() === 'i' || e.key.toLowerCase() === 'j')) || // Ctrl+Shift+I/J
+      (e.ctrlKey && e.key.toLowerCase() === 'u') || // Ctrl+U (View Source)
+      (e.ctrlKey && e.key.toLowerCase() === 'p');   // Ctrl+P (Print)
+
+    if (isBlockedKey) {
+      e.preventDefault();
+      e.stopPropagation();
     }
+  });
 
 
-
-
-
-    // 🔒 Disable right-click
-    document.addEventListener('contextmenu', (e) => e.preventDefault());
-
-    // 🔒 Block DevTools shortcuts + Ctrl+P silently
-    document.addEventListener('keydown', (e) => {
-        const isBlockedKey =
-            e.key === 'F12' || // DevTools
-            e.key === 'F11' || // Fullscreen
-            (e.ctrlKey && e.shiftKey && (e.key.toLowerCase() === 'i' || e.key.toLowerCase() === 'j')) || // Ctrl+Shift+I/J
-            (e.ctrlKey && e.key.toLowerCase() === 'u') || // Ctrl+U (View Source)
-            (e.ctrlKey && e.key.toLowerCase() === 'p');   // Ctrl+P (Print)
-
-        if (isBlockedKey) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-    });
-
-
- return (
+  return (
 
     <Box sx={{ height: 'calc(95vh - 80px)', overflowY: 'auto', paddingRight: 1, backgroundColor: 'transparent' }}>
       <div ref={divToPrintRef}>
@@ -1184,7 +1181,7 @@ const StudentECATApplicationForm = () => {
             </tr>
 
 
-             <tr style={{ fontFamily: "Times New Roman", fontSize: "12px", textAlign: "left" }}>
+            <tr style={{ fontFamily: "Times New Roman", fontSize: "12px", textAlign: "left" }}>
               <td colSpan={40}>
                 <b>Complete Address:</b>
                 <span
@@ -1195,7 +1192,7 @@ const StudentECATApplicationForm = () => {
                     marginLeft: "10px",
                   }}
                 >
-              
+
                 </span>
                 <b style={{ marginLeft: "10px" }}>Learner's Reference No.:</b>
                 <span

@@ -64,59 +64,75 @@ const CurriculumPanel = () => {
         }
     };
 
-     // 🔒 Disable right-click
-  document.addEventListener('contextmenu', (e) => e.preventDefault());
+    const handleUpdateStatus = async (id, currentStatus) => {
+        try {
+            const newStatus = currentStatus === 1 ? 0 : 1;
+            await axios.put(`http://localhost:5000/update_curriculum/${id}`, {
+                lock_status: newStatus,
+            });
+            fetchCurriculum(); // Refresh list
+            setSuccessMsg(`Curriculum #${id} is now ${newStatus === 1 ? "Active" : "Inactive"}`);
+            setTimeout(() => setSuccessMsg(""), 3000);
+        } catch (err) {
+            console.error("Error updating status:", err);
+            alert("Failed to update curriculum status");
+        }
+    };
 
-  // 🔒 Block DevTools shortcuts + Ctrl+P silently
-  document.addEventListener('keydown', (e) => {
-    const isBlockedKey =
-      e.key === 'F12' || // DevTools
-      e.key === 'F11' || // Fullscreen
-      (e.ctrlKey && e.shiftKey && (e.key.toLowerCase() === 'i' || e.key.toLowerCase() === 'j')) || // Ctrl+Shift+I/J
-      (e.ctrlKey && e.key.toLowerCase() === 'u') || // Ctrl+U (View Source)
-      (e.ctrlKey && e.key.toLowerCase() === 'p');   // Ctrl+P (Print)
 
-    if (isBlockedKey) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  });
+    // 🔒 Disable right-click
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    // 🔒 Block DevTools shortcuts + Ctrl+P silently
+    document.addEventListener('keydown', (e) => {
+        const isBlockedKey =
+            e.key === 'F12' || // DevTools
+            e.key === 'F11' || // Fullscreen
+            (e.ctrlKey && e.shiftKey && (e.key.toLowerCase() === 'i' || e.key.toLowerCase() === 'j')) || // Ctrl+Shift+I/J
+            (e.ctrlKey && e.key.toLowerCase() === 'u') || // Ctrl+U (View Source)
+            (e.ctrlKey && e.key.toLowerCase() === 'p');   // Ctrl+P (Print)
+
+        if (isBlockedKey) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    });
 
 
 
     return (
         <Box sx={{ height: "calc(100vh - 150px)", overflowY: "auto", paddingRight: 1, backgroundColor: "transparent" }}>
 
-  <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          mt: 2,
-      
-          mb: 2,
-          px: 2,
-        }}
-      >
-        <Typography
-          variant="h4"
-          sx={{
-            fontWeight: 'bold',
-            color: 'maroon',
-            fontSize: '36px',
-          }}
-        >
-     CURRICULUM PANEL
-        </Typography>
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    mt: 2,
 
-      
+                    mb: 2,
+                    px: 2,
+                }}
+            >
+                <Typography
+                    variant="h4"
+                    sx={{
+                        fontWeight: 'bold',
+                        color: 'maroon',
+                        fontSize: '36px',
+                    }}
+                >
+                    CURRICULUM PANEL
+                </Typography>
 
 
-      </Box>
-      <hr style={{ border: "1px solid #ccc", width: "100%" }} />
 
-      <br />
+
+            </Box>
+            <hr style={{ border: "1px solid #ccc", width: "100%" }} />
+
+            <br />
 
 
             <div style={styles.container}>
@@ -160,17 +176,41 @@ const CurriculumPanel = () => {
                                 <th>ID</th>
                                 <th>Year</th>
                                 <th>Program</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
+
                         <tbody>
                             {curriculumList.map(item => (
                                 <tr key={item.curriculum_id}>
                                     <td>{item.curriculum_id}</td>
                                     <td>{item.year_description}</td>
                                     <td>{item.program_description} ({item.program_code})</td>
+                                    <td>
+                                        <button
+                                            onClick={() => handleUpdateStatus(item.curriculum_id, item.lock_status)}
+                                            style={{
+                                                backgroundColor: item.lock_status === 1 ? "green" : "maroon", // ✅ Maroon for inactive
+                                                color: "white",
+                                                border: "none",
+                                                borderRadius: "6px",
+                                                width: "100px",        // ✅ Same width
+                                                height: "36px",        // ✅ Same height
+                                                fontWeight: "bold",
+                                                fontSize: "14px",
+                                                cursor: "pointer",
+                                                transition: "0.3s ease",
+                                            }}
+                                            onMouseOver={e => e.target.style.opacity = "0.85"}
+                                            onMouseOut={e => e.target.style.opacity = "1"}
+                                        >
+                                            {item.lock_status === 1 ? "Active" : "Inactive"}
+                                        </button>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
+
                     </table>
                 </div>
             </div>
@@ -198,7 +238,7 @@ const styles = {
         flex: 2,
         padding: '20px',
         borderRadius: '8px',
-          border: "2px solid maroon",
+        border: "2px solid maroon",
         backgroundColor: '#f9f9f9',
         boxShadow: '0 0 10px rgba(0,0,0,0.1)'
     },

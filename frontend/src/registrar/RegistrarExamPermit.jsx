@@ -17,18 +17,13 @@ const RegistrarExamPermit = ({ personId }) => {
         extension: "",
     });
 
+    const [campusAddress, setCampusAddress] = useState("");
+
     useEffect(() => {
-        console.log("Fetched campus:", person.campus);
-    }, [person]);
-
-
-    const campusAddresses = {
-        0: "Nagtahan St. Sampaloc, Manila",
-        1: "Poblacion 5, Congressional Road, General Mariano Alvarez,",
-    };
-
-
-    const campusAddress = campusAddresses[person?.campus] || "";
+        if (settings && settings.address) {
+            setCampusAddress(settings.address);
+        }
+    }, [settings]);
 
 
     const [examSchedule, setExamSchedule] = useState(null);

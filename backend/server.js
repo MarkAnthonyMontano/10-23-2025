@@ -240,12 +240,14 @@ const deleteOldLogo = (logoUrl) => {
 };
 
 // ✅ GET Settings (Promise-based)
+// ✅ GET Settings
 app.get("/api/settings", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT * FROM company_settings WHERE id = 1");
     if (rows.length === 0) {
       return res.json({
         company_name: "",
+        address: "",
         header_color: "#ffffff",
         footer_text: "",
         footer_color: "#ffffff",
@@ -259,14 +261,11 @@ app.get("/api/settings", async (req, res) => {
   }
 });
 
-// ✅ POST Settings (Promise-based)
+// ✅ POST Settings
 app.post("/api/settings", settingsUpload.single("logo"), async (req, res) => {
   try {
-    console.log("🟢 Received settings update");
-    console.log("Body:", req.body);
-    console.log("File:", req.file);
-
     const companyName = req.body.company_name || "";
+    const address = req.body.address || "";
     const headerColor = req.body.header_color || "#ffffff";
     const footerText = req.body.footer_text || "";
     const footerColor = req.body.footer_color || "#ffffff";
@@ -276,9 +275,10 @@ app.post("/api/settings", settingsUpload.single("logo"), async (req, res) => {
 
     if (rows.length > 0) {
       const oldLogo = rows[0].logo_url;
-      let query =
-        "UPDATE company_settings SET company_name=?, header_color=?, footer_text=?, footer_color=?";
-      const params = [companyName, headerColor, footerText, footerColor];
+      let query = `
+        UPDATE company_settings 
+        SET company_name=?, address=?, header_color=?, footer_text=?, footer_color=?`;
+      const params = [companyName, address, headerColor, footerText, footerColor];
 
       if (logoUrl) {
         query += ", logo_url=?";
@@ -287,16 +287,15 @@ app.post("/api/settings", settingsUpload.single("logo"), async (req, res) => {
       query += " WHERE id=1";
 
       await db.query(query, params);
-
       if (logoUrl && oldLogo) deleteOldLogo(oldLogo);
 
-      console.log("✅ Settings updated successfully!");
       return res.json({ success: true, message: "Settings updated successfully." });
     } else {
-      const insertQuery =
-        "INSERT INTO company_settings (company_name, header_color, footer_text, footer_color, logo_url) VALUES (?, ?, ?, ?, ?)";
-      await db.query(insertQuery, [companyName, headerColor, footerText, footerColor, logoUrl]);
-      console.log("✅ Settings created successfully!");
+      const insertQuery = `
+        INSERT INTO company_settings 
+        (company_name, address, header_color, footer_text, footer_color, logo_url)
+        VALUES (?, ?, ?, ?, ?, ?)`;
+      await db.query(insertQuery, [companyName, address, headerColor, footerText, footerColor, logoUrl]);
       res.json({ success: true, message: "Settings created successfully." });
     }
   } catch (err) {
@@ -304,6 +303,7 @@ app.post("/api/settings", settingsUpload.single("logo"), async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 //----------------------------End Settings----------------------------//
 
 
@@ -6723,6 +6723,32 @@ app.get("/get_curriculum", async (req, res) => {
     });
   }
 });
+
+// ✅ UPDATE Curriculum lock_status (0 = inactive, 1 = active)
+app.put("/update_curriculum/:id", async (req, res) => {
+  const { id } = req.params;
+  const { lock_status } = req.body;
+
+  try {
+    // Ensure valid input
+    if (lock_status !== 0 && lock_status !== 1) {
+      return res.status(400).json({ message: "Invalid status value (must be 0 or 1)" });
+    }
+
+    const sql = "UPDATE curriculum_table SET lock_status = ? WHERE curriculum_id = ?";
+    const [result] = await db3.query(sql, [lock_status, id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Curriculum not found" });
+    }
+
+    res.status(200).json({ message: "Curriculum status updated successfully" });
+  } catch (error) {
+    console.error("❌ Error updating curriculum status:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
 
 /// COURSE TABLE - ADDING COURSE (UPDATED!)
 app.post("/adding_course", async (req, res) => {
