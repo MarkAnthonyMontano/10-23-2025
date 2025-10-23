@@ -10,6 +10,8 @@ import {
     Box,
     Divider,
     Avatar,
+    Snackbar,
+    Alert,
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 
@@ -21,6 +23,18 @@ function Settings({ onUpdate }) {
     const [headerColor, setHeaderColor] = useState("#ffffff");
     const [footerText, setFooterText] = useState("");
     const [footerColor, setFooterColor] = useState("#ffffff");
+
+    // Snackbar state
+    const [snack, setSnack] = useState({
+        open: false,
+        message: "",
+        severity: "info",
+    });
+
+    const handleCloseSnack = (_, reason) => {
+        if (reason === "clickaway") return;
+        setSnack((prev) => ({ ...prev, open: false }));
+    };
 
     useEffect(() => {
         axios
@@ -41,7 +55,14 @@ function Settings({ onUpdate }) {
                 setFooterText(footer_text || "");
                 setFooterColor(footer_color || "#ffffff");
             })
-            .catch((error) => console.error("Error fetching settings:", error));
+            .catch((error) => {
+                console.error("Error fetching settings:", error);
+                setSnack({
+                    open: true,
+                    message: "Failed to fetch settings",
+                    severity: "error",
+                });
+            });
     }, []);
 
     const handleSubmit = async (event) => {
@@ -63,9 +84,18 @@ function Settings({ onUpdate }) {
                 await onUpdate();
             }
 
-            alert("Settings updated successfully!");
+            setSnack({
+                open: true,
+                message: "Settings updated successfully!",
+                severity: "success",
+            });
         } catch (error) {
             console.error("Error updating settings:", error);
+            setSnack({
+                open: true,
+                message: "Error updating settings",
+                severity: "error",
+            });
         }
     };
 
@@ -218,9 +248,24 @@ function Settings({ onUpdate }) {
                     </Button>
                 </form>
             </Paper>
+
+            {/* ✅ Snackbar */}
+            <Snackbar
+                open={snack.open}
+                autoHideDuration={4000}
+                onClose={handleCloseSnack}
+                anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            >
+                <Alert
+                    severity={snack.severity}
+                    onClose={handleCloseSnack}
+                    sx={{ width: "100%" }}
+                >
+                    {snack.message}
+                </Alert>
+            </Snackbar>
         </Box>
     );
-
 }
 
 export default Settings;

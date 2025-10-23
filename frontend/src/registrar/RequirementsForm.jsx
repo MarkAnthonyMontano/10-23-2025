@@ -1,20 +1,47 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Typography, Box, MenuItem, Select, FormControl, InputLabel } from "@mui/material";
+import {
+  Typography,
+  Box,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Snackbar,
+  Alert,
+} from "@mui/material";
 
 const RequirementsForm = () => {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Regular"); // ✅ Default category
   const [requirements, setRequirements] = useState([]);
   const [shortLabel, setShortLabel] = useState("");
+  const [documentStatus, setDocumentStatus] = useState("On Process");
 
-  // Fetch all requirements
+  // ✅ Snackbar state
+  const [snack, setSnack] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
+
+  const handleCloseSnack = (_, reason) => {
+    if (reason === "clickaway") return;
+    setSnack((prev) => ({ ...prev, open: false }));
+  };
+
+  // ✅ Fetch all requirements
   const fetchRequirements = async () => {
     try {
       const res = await axios.get("http://localhost:5000/requirements");
       setRequirements(res.data);
     } catch (err) {
       console.error("Error fetching requirements:", err);
+      setSnack({
+        open: true,
+        message: "Failed to load requirements",
+        severity: "error",
+      });
     }
   };
 
@@ -22,46 +49,71 @@ const RequirementsForm = () => {
     fetchRequirements();
   }, []);
 
-  const [documentStatus, setDocumentStatus] = useState("On Process");
-
-
-  // Handle submission of a new requirement
+  // ✅ Handle submission of a new requirement
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!description.trim()) {
-      alert("Please enter a requirement description.");
+      setSnack({
+        open: true,
+        message: "Please enter a requirement description.",
+        severity: "warning",
+      });
       return;
     }
     if (!category) {
-      alert("Please select a category.");
+      setSnack({
+        open: true,
+        message: "Please select a category.",
+        severity: "warning",
+      });
       return;
     }
+
     try {
       await axios.post("http://localhost:5000/requirements", {
         requirements_description: description,
         short_label: shortLabel,
         category: category,
-        document_status: documentStatus,  // ✅ new field
+        document_status: documentStatus,
       });
       setDescription("");
       setShortLabel("");
       setCategory("Regular");
       fetchRequirements();
+      setSnack({
+        open: true,
+        message: "Requirement saved successfully!",
+        severity: "success",
+      });
     } catch (err) {
       console.error("Error saving requirement:", err);
+      setSnack({
+        open: true,
+        message: "Error saving requirement.",
+        severity: "error",
+      });
     }
   };
 
-  // Handle deletion of a requirement
+  // ✅ Handle deletion of a requirement
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:5000/requirements/${id}`);
       fetchRequirements();
+      setSnack({
+        open: true,
+        message: "Requirement deleted successfully!",
+        severity: "success",
+      });
     } catch (err) {
       console.error("Error deleting requirement:", err);
+      setSnack({
+        open: true,
+        message: "Error deleting requirement.",
+        severity: "error",
+      });
     }
   };
-
 
   // ✅ Group requirements by category
   const groupedRequirements = requirements.reduce((acc, req) => {
@@ -72,7 +124,14 @@ const RequirementsForm = () => {
   }, {});
 
   return (
-    <Box sx={{ height: "calc(100vh - 150px)", overflowY: "auto", paddingRight: 1, backgroundColor: "transparent" }}>
+    <Box
+      sx={{
+        height: "calc(100vh - 150px)",
+        overflowY: "auto",
+        paddingRight: 1,
+        backgroundColor: "transparent",
+      }}
+    >
       <Box
         sx={{
           display: "flex",
@@ -84,7 +143,10 @@ const RequirementsForm = () => {
           px: 2,
         }}
       >
-        <Typography variant="h4" sx={{ fontWeight: "bold", color: "maroon", fontSize: "36px" }}>
+        <Typography
+          variant="h4"
+          sx={{ fontWeight: "bold", color: "maroon", fontSize: "36px" }}
+        >
           MANAGE REQUIREMENTS
         </Typography>
       </Box>
@@ -94,7 +156,10 @@ const RequirementsForm = () => {
 
       <div className="flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-8">
         {/* Left Side - Form */}
-        <div style={{ border: "2px solid maroon" }} className="md:w-1/2 bg-gray-50 p-6 rounded-lg shadow-sm">
+        <div
+          style={{ border: "2px solid maroon" }}
+          className="md:w-1/2 bg-gray-50 p-6 rounded-lg shadow-sm"
+        >
           <h3 style={{ color: "maroon" }} className="text-xl font-semibold mb-4">
             Add a New Requirement
           </h3>
@@ -115,7 +180,6 @@ const RequirementsForm = () => {
               className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
-
             {/* ✅ Category Selector */}
             <FormControl fullWidth>
               <InputLabel>Category</InputLabel>
@@ -130,7 +194,6 @@ const RequirementsForm = () => {
               </Select>
             </FormControl>
 
-          
             <button
               type="submit"
               className="w-full py-3 text-white rounded-lg shadow-md hover:bg-red-700 transition duration-300"
@@ -142,7 +205,10 @@ const RequirementsForm = () => {
         </div>
 
         {/* Right Side - Display Saved Requirements */}
-        <div style={{ border: "2px solid maroon" }} className="md:w-1/2 bg-gray-50 p-6 rounded-lg shadow-sm max-h-96 overflow-y-auto">
+        <div
+          style={{ border: "2px solid maroon" }}
+          className="md:w-1/2 bg-gray-50 p-6 rounded-lg shadow-sm max-h-96 overflow-y-auto"
+        >
           <h3 style={{ color: "maroon" }} className="text-xl font-semibold mb-4">
             Saved Requirements
           </h3>
@@ -170,6 +236,22 @@ const RequirementsForm = () => {
           ))}
         </div>
       </div>
+
+      {/* ✅ Snackbar */}
+      <Snackbar
+        open={snack.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnack}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleCloseSnack}
+          severity={snack.severity}
+          sx={{ width: "100%" }}
+        >
+          {snack.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

@@ -6638,6 +6638,41 @@ app.get("/get_program", async (req, res) => {
   }
 });
 
+// ✅ UPDATE PROGRAM
+app.put("/program/:id", async (req, res) => {
+  const { id } = req.params;
+  const { name, code } = req.body;
+
+  const updateQuery = `
+    UPDATE program_table 
+    SET program_description = ?, program_code = ?
+    WHERE program_id = ?`;
+
+  try {
+    await db3.query(updateQuery, [name, code, id]);
+    res.status(200).send({ message: "Program updated successfully" });
+  } catch (err) {
+    console.error("Error updating program:", err);
+    res.status(500).send({ message: "Internal Server Error" });
+  }
+});
+
+// ✅ DELETE PROGRAM
+app.delete("/program/:id", async (req, res) => {
+  const { id } = req.params;
+
+  const deleteQuery = "DELETE FROM program_table WHERE program_id = ?";
+
+  try {
+    await db3.query(deleteQuery, [id]);
+    res.status(200).send({ message: "Program deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting program:", err);
+    res.status(500).send({ message: "Internal Server Error" });
+  }
+});
+
+
 // UPDATE PROGRAM INFORMATION (SUPERADMIN)(UPDATED!)
 app.put("/update_program/:id", async (req, res) => {
   const { id } = req.params;
@@ -6753,32 +6788,53 @@ app.put("/update_curriculum/:id", async (req, res) => {
 /// COURSE TABLE - ADDING COURSE (UPDATED!)
 app.post("/adding_course", async (req, res) => {
   const { course_code, course_description, course_unit, lab_unit } = req.body;
-
-  // Basic validation
-  if (!course_code || !course_description || !course_unit || !lab_unit) {
-    return res.status(400).json({ error: "All course fields are required" });
-  }
-
-  const courseQuery = `
-    INSERT INTO course_table (course_code, course_description, course_unit, lab_unit)
-    VALUES (?, ?, ?, ?)
-  `;
-
   try {
-    const [result] = await db3.query(courseQuery, [course_code, course_description, course_unit, lab_unit]);
-
-    res.status(201).json({
-      message: "Course added successfully",
-      course_id: result.insertId,
-    });
-  } catch (err) {
-    console.error("Database error:", err);
-    res.status(500).json({
-      error: "Internal Server Error",
-      details: err.message,
-    });
+    await db3.query(
+      "INSERT INTO course_table (course_code, course_description, course_unit, lab_unit) VALUES (?, ?, ?, ?)",
+      [course_code, course_description, course_unit, lab_unit]
+    );
+    res.json({ message: "✅ Course added successfully" });
+  } catch (error) {
+    console.error("❌ Error adding course:", error);
+    res.status(500).json({ message: "Failed to add course" });
   }
 });
+
+// ✅ Update an existing course
+app.put("/update_course/:id", async (req, res) => {
+  const { id } = req.params;
+  const { course_code, course_description, course_unit, lab_unit } = req.body;
+  try {
+    const [result] = await db3.query(
+      "UPDATE course_table SET course_code=?, course_description=?, course_unit=?, lab_unit=? WHERE course_id=?",
+      [course_code, course_description, course_unit, lab_unit, id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+    res.json({ message: "✅ Course updated successfully" });
+  } catch (error) {
+    console.error("❌ Error updating course:", error);
+    res.status(500).json({ message: "Failed to update course" });
+  }
+});
+
+// ✅ Delete a course
+app.delete("/delete_course/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [result] = await db3.query("DELETE FROM course_table WHERE course_id=?", [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+    res.json({ message: "✅ Course deleted successfully" });
+  } catch (error) {
+    console.error("❌ Error deleting course:", error);
+    res.status(500).json({ message: "Failed to delete course" });
+  }
+});
+
+
 
 // READ COURSE LIST (UPDATED!)
 // ✅ FIXED: Works with your curriculum_table structure
@@ -6908,18 +6964,14 @@ app.get("/get_course", async (req, res) => {
 });
 
 // COURSE LIST (UPDATED!)
+// ✅ Get all courses
 app.get("/course_list", async (req, res) => {
-  const query = "SELECT * FROM course_table";
-
   try {
-    const [result] = await db3.query(query);
-    res.status(200).json(result);
-  } catch (err) {
-    console.error("Query error:", err);
-    res.status(500).json({
-      error: "Query failed",
-      details: err.message,
-    });
+    const [rows] = await db3.query("SELECT * FROM course_table ORDER BY course_id ASC");
+    res.json(rows);
+  } catch (error) {
+    console.error("❌ Error fetching courses:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -7191,6 +7243,54 @@ app.post("/room", async (req, res) => {
     });
   } catch (error) {
     console.error("Error inserting room:", error);
+    res.status(500).send(error);
+  }
+});
+
+
+// UPDATE ROOM
+app.put("/room/:id", async (req, res) => {
+  const { id } = req.params;
+  const { building_name, room_name } = req.body;
+
+  if (!building_name || !room_name) {
+    return res.status(400).send({ message: "Building name and room name are required" });
+  }
+
+  try {
+    const updateQuery = `
+      UPDATE room_table
+      SET building_description = ?, room_description = ?
+      WHERE room_id = ?
+    `;
+    const [result] = await db3.query(updateQuery, [building_name, room_name, id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).send({ message: "Room not found" });
+    }
+
+    res.status(200).send({ message: "Room successfully updated" });
+  } catch (error) {
+    console.error("Error updating room:", error);
+    res.status(500).send(error);
+  }
+});
+
+// DELETE ROOM
+app.delete("/room/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const deleteQuery = `DELETE FROM room_table WHERE room_id = ?`;
+    const [result] = await db3.query(deleteQuery, [id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).send({ message: "Room not found" });
+    }
+
+    res.status(200).send({ message: "Room successfully deleted" });
+  } catch (error) {
+    console.error("Error deleting room:", error);
     res.status(500).send(error);
   }
 });
