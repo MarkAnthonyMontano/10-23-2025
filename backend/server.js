@@ -216,6 +216,8 @@ db.query(`
   );
 `);
 //----------------------------Settings----------------------------//
+const allowedExtensions = [".png", ".jpg", ".jpeg", ".pdf"];
+
 const settingsStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = path.join(__dirname, "uploads");
@@ -223,23 +225,34 @@ const settingsStorage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (!allowedExtensions.includes(ext)) {
+      return cb(new Error("Invalid file type. Only PNG, JPG, JPEG, or PDF allowed."));
+    }
+
+    // Name files based on their field
+    if (file.fieldname === "logo") {
+      cb(null, "Logo" + ext);
+    } else if (file.fieldname === "bg_image") {
+      cb(null, "Background" + ext);
+    } else {
+      cb(null, Date.now() + ext);
+    }
   },
 });
 
 const settingsUpload = multer({ storage: settingsStorage });
 
-// ✅ Delete old logo safely
-const deleteOldLogo = (logoUrl) => {
-  if (!logoUrl) return;
-  const logoPath = path.join(__dirname, logoUrl.replace(/^\//, ""));
-  fs.unlink(logoPath, (err) => {
-    if (err) console.error(`Error deleting old logo: ${err.message}`);
-    else console.log(`Deleted old logo: ${logoPath}`);
+// ✅ Delete old image safely
+const deleteOldFile = (fileUrl) => {
+  if (!fileUrl) return;
+  const filePath = path.join(__dirname, fileUrl.replace(/^\//, ""));
+  fs.unlink(filePath, (err) => {
+    if (err) console.error(`Error deleting old file: ${err.message}`);
+    else console.log(`Deleted old file: ${filePath}`);
   });
 };
 
-// ✅ GET Settings (Promise-based)
 // ✅ GET Settings
 app.get("/api/settings", async (req, res) => {
   try {
@@ -252,6 +265,7 @@ app.get("/api/settings", async (req, res) => {
         footer_text: "",
         footer_color: "#ffffff",
         logo_url: null,
+        bg_image: null,
       });
     }
     res.json(rows[0]);
@@ -262,49 +276,74 @@ app.get("/api/settings", async (req, res) => {
 });
 
 // ✅ POST Settings
-app.post("/api/settings", settingsUpload.single("logo"), async (req, res) => {
-  try {
-    const companyName = req.body.company_name || "";
-    const address = req.body.address || "";
-    const headerColor = req.body.header_color || "#ffffff";
-    const footerText = req.body.footer_text || "";
-    const footerColor = req.body.footer_color || "#ffffff";
-    const logoUrl = req.file ? `/uploads/${req.file.filename}` : null;
+app.post(
+  "/api/settings",
+  settingsUpload.fields([
+    { name: "logo", maxCount: 1 },
+    { name: "bg_image", maxCount: 1 },
+  ]),
+  async (req, res) => {
+    try {
+      const companyName = req.body.company_name || "";
+      const address = req.body.address || "";
+      const headerColor = req.body.header_color || "#ffffff";
+      const footerText = req.body.footer_text || "";
+      const footerColor = req.body.footer_color || "#ffffff";
 
-    const [rows] = await db.query("SELECT * FROM company_settings WHERE id = 1");
+      const logoUrl = req.files["logo"] ? `/uploads/${req.files["logo"][0].filename}` : null;
+      const bgImageUrl = req.files["bg_image"] ? `/uploads/${req.files["bg_image"][0].filename}` : null;
 
-    if (rows.length > 0) {
-      const oldLogo = rows[0].logo_url;
-      let query = `
-        UPDATE company_settings 
-        SET company_name=?, address=?, header_color=?, footer_text=?, footer_color=?`;
-      const params = [companyName, address, headerColor, footerText, footerColor];
+      const [rows] = await db.query("SELECT * FROM company_settings WHERE id = 1");
 
-      if (logoUrl) {
-        query += ", logo_url=?";
-        params.push(logoUrl);
+      if (rows.length > 0) {
+        const oldLogo = rows[0].logo_url;
+        const oldBg = rows[0].bg_image;
+
+        let query = `
+          UPDATE company_settings 
+          SET company_name=?, address=?, header_color=?, footer_text=?, footer_color=?`;
+        const params = [companyName, address, headerColor, footerText, footerColor];
+
+        if (logoUrl) {
+          query += ", logo_url=?";
+          params.push(logoUrl);
+        }
+        if (bgImageUrl) {
+          query += ", bg_image=?";
+          params.push(bgImageUrl);
+        }
+
+        query += " WHERE id=1";
+        await db.query(query, params);
+
+        if (logoUrl && oldLogo && oldLogo !== logoUrl) deleteOldFile(oldLogo);
+        if (bgImageUrl && oldBg && oldBg !== bgImageUrl) deleteOldFile(oldBg);
+
+        return res.json({ success: true, message: "Settings updated successfully." });
+      } else {
+        const insertQuery = `
+          INSERT INTO company_settings 
+          (company_name, address, header_color, footer_text, footer_color, logo_url, bg_image)
+          VALUES (?, ?, ?, ?, ?, ?, ?)`;
+        await db.query(insertQuery, [
+          companyName,
+          address,
+          headerColor,
+          footerText,
+          footerColor,
+          logoUrl,
+          bgImageUrl,
+        ]);
+        res.json({ success: true, message: "Settings created successfully." });
       }
-      query += " WHERE id=1";
-
-      await db.query(query, params);
-      if (logoUrl && oldLogo) deleteOldLogo(oldLogo);
-
-      return res.json({ success: true, message: "Settings updated successfully." });
-    } else {
-      const insertQuery = `
-        INSERT INTO company_settings 
-        (company_name, address, header_color, footer_text, footer_color, logo_url)
-        VALUES (?, ?, ?, ?, ?, ?)`;
-      await db.query(insertQuery, [companyName, address, headerColor, footerText, footerColor, logoUrl]);
-      res.json({ success: true, message: "Settings created successfully." });
+    } catch (err) {
+      console.error("❌ Error in /api/settings:", err);
+      res.status(500).json({ error: err.message });
     }
-  } catch (err) {
-    console.error("❌ Error in /api/settings:", err);
-    res.status(500).json({ error: err.message });
   }
-});
-
+);
 //----------------------------End Settings----------------------------//
+
 
 
 /*---------------------------------START---------------------------------------*/
@@ -3915,28 +3954,24 @@ app.post("/superadmin-get-registrar", async (req, res) => {
 });
 
 // ---------------- Registrar: Reset Password ----------------
-// 🔹 Forgot Password Route
+// 🔹 FORGOT PASSWORD (handles student, registrar, faculty)
 app.post("/forgot-password", async (req, res) => {
   const { email } = req.body;
-
   if (!email) return res.status(400).json({ message: "Email is required" });
 
-  // Generate temporary password
-  const generatePassword = () => {
+  // ✅ Generate uppercase temporary password (A–Z + 0–9)
+  const generateTempPassword = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let password = "";
-    for (let i = 0; i < 8; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return password;
+    return Array.from({ length: 8 }, () =>
+      chars.charAt(Math.floor(Math.random() * chars.length))
+    ).join("");
   };
 
-  const newPassword = generatePassword();
+  const newPassword = generateTempPassword();
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
 
   try {
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-    // 1. Check student or registrar
+    // 1️⃣ Check in user_accounts (student / registrar)
     const [userResult] = await db3.query(
       "UPDATE user_accounts SET password = ? WHERE email = ? AND (role = 'student' OR role = 'registrar')",
       [hashedPassword, email]
@@ -3944,52 +3979,70 @@ app.post("/forgot-password", async (req, res) => {
 
     if (userResult.affectedRows > 0) {
       await sendResetEmail(email, newPassword, "Student/Registrar Account");
-      return res.json({ message: "Password reset successfully. Check your email." });
+      return res.json({
+        message: "Password reset successfully. Please check your email.",
+      });
     }
 
-    // 2. Check faculty
-    // 🔹 2. Try faculty in prof_table
-    const hashedProfPassword = await bcrypt.hash(newPassword, 10);
-
+    // 2️⃣ Check in prof_table (faculty)
     const [profResult] = await db3.query(
       "UPDATE prof_table SET password = ? WHERE email = ? AND role = 'faculty'",
-      [hashedProfPassword, email]
+      [hashedPassword, email]
     );
-
 
     if (profResult.affectedRows > 0) {
       await sendResetEmail(email, newPassword, "Faculty Account");
-      return res.json({ message: "Password reset successfully. Check your email." });
+      return res.json({
+        message: "Password reset successfully. Please check your email.",
+      });
     }
 
-    return res.status(404).json({ message: "Account not found" });
+    // 3️⃣ Not found
+    return res
+      .status(404)
+      .json({ message: "Account not found. Please check your email address." });
   } catch (err) {
-    console.error("Reset password error:", err);
+    console.error("❌ Forgot password error:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 });
 
-// 🔹 Email Sender
-async function sendResetEmail(to, newPassword, accountType) {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+// 🔹 Email sender
+async function sendResetEmail(to, tempPassword, accountType) {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
 
-  await transporter.sendMail({
-    from: `"EARIST MIS" <${process.env.EMAIL_USER}>`,
-    to,
-    subject: `Your ${accountType} Password has been Reset`,
-    html: `
-      <p>Hello,</p>
-      <p>Your new temporary password is: <b>${newPassword}</b></p>
-      <p>Please change it immediately after logging in.</p>
-    `,
-  });
+    const mailOptions = {
+      from: `"EARIST MIS" <${process.env.EMAIL_USER}>`,
+      to,
+      subject: `🔐 ${accountType} Password Reset`,
+      html: `
+        <div style="font-family: Arial, sans-serif; color: #333;">
+          <h2 style="color:#6D2323;">${accountType} Password Reset</h2>
+          <p>Hello,</p>
+          <p>Your new temporary password is:</p>
+          <p style="font-size: 18px; font-weight: bold; color:#6D2323;">${tempPassword}</p>
+          <p>Please log in using this password and change it immediately.</p>
+          <hr />
+          <p>© 2025 Eulogio "Amang" Rodriguez Institute of Science and Technology<br>
+          Student Information System</p>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`📧 Reset email sent to ${to} (${accountType})`);
+  } catch (emailErr) {
+    console.error("❌ Email send error:", emailErr);
+  }
 }
+
 
 // ---------------- Registrar: Update Status ----------------
 app.post("/superadmin-update-status-registrar", async (req, res) => {
@@ -6964,14 +7017,18 @@ app.get("/get_course", async (req, res) => {
 });
 
 // COURSE LIST (UPDATED!)
-// ✅ Get all courses
 app.get("/course_list", async (req, res) => {
+  const query = "SELECT * FROM course_table";
+
   try {
-    const [rows] = await db3.query("SELECT * FROM course_table ORDER BY course_id ASC");
-    res.json(rows);
-  } catch (error) {
-    console.error("❌ Error fetching courses:", error);
-    res.status(500).json({ message: "Server error" });
+    const [result] = await db3.query(query);
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("Query error:", err);
+    res.status(500).json({
+      error: "Query failed",
+      details: err.message,
+    });
   }
 });
 
@@ -9810,20 +9867,65 @@ app.get("/api/student/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
-    const [rows] = await db3.execute(`SELECT snt.person_id, pt.profile_img AS profile_image, ua.role, pt.extension, pt.last_name, pt.first_name, pt.middle_name, snt.student_number FROM student_numbering_table AS snt 
-    INNER JOIN person_table AS pt ON snt.person_id = pt.person_id
-    INNER JOIN user_accounts AS ua ON pt.person_id = ua.person_id
-    WHERE pt.person_id = ?`, [id]);
+    const [rows] = await db3.execute(`
+      SELECT DISTINCT 
+        snt.person_id, 
+        pt.profile_img AS profile_image, 
+        ua.role, 
+        pt.extension, 
+        pt.last_name, 
+        pt.first_name, 
+        pt.middle_name, 
+        snt.student_number, 
+        sst.year_level_id, 
+        es.curriculum_id, 
+        sy.semester_id 
+      FROM student_numbering_table AS snt 
+      INNER JOIN person_table AS pt ON snt.person_id = pt.person_id
+      INNER JOIN user_accounts AS ua ON pt.person_id = ua.person_id
+      INNER JOIN enrolled_subject AS es ON snt.student_number = es.student_number
+      INNER JOIN student_status_table AS sst ON snt.student_number = sst.student_number
+      INNER JOIN active_school_year_table AS sy ON es.active_school_year_id = sy.id
+      WHERE pt.person_id = ?
+    `, [id]);
 
     if (rows.length === 0) {
       return res.status(404).json({ error: "Person not found" });
     }
 
-    res.json(rows[0]);
-    console.log(rows[0]);
+    const { student_number, year_level_id, curriculum_id, semester_id } = rows[0];
+
+    const checkTotalRequiredUnits = `
+      SELECT COALESCE(SUM(ct.course_unit) + SUM(ct.lab_unit), 0) AS required_total_units 
+      FROM program_tagging_table AS ptt
+      INNER JOIN course_table AS ct ON ptt.course_id = ct.course_id
+      WHERE ptt.year_level_id = ? AND ptt.semester_id = ? AND ptt.curriculum_id = ?
+    `;
+    const [requiredUnits] = await db3.query(checkTotalRequiredUnits, [year_level_id, semester_id, curriculum_id]);
+
+    const checkTotalEnrolledUnits = `
+      SELECT COALESCE(SUM(ct.course_unit) + SUM(ct.lab_unit), 0) AS enrolled_total_units 
+      FROM enrolled_subject AS es
+      INNER JOIN course_table AS ct ON es.course_id = ct.course_id
+      INNER JOIN student_status_table AS sst ON es.student_number = sst.student_number
+      INNER JOIN active_school_year_table AS sy ON es.active_school_year_id = sy.id
+      WHERE sy.astatus = 1 AND es.student_number = ? AND sst.year_level_id = ?;
+    `;
+    const [enrolledUnits] = await db3.query(checkTotalEnrolledUnits, [student_number, year_level_id]);
+
+    const requiredTotal = requiredUnits[0]?.required_total_units || 0;
+    const enrolledTotal = enrolledUnits[0]?.enrolled_total_units || 0;
+
+    const student_status = enrolledTotal === requiredTotal ? "Regular" : "Irregular";
+
+    return res.json({
+      ...rows[0],
+      student_status,
+    });
+
   } catch (error) {
     console.error("Error fetching person:", error);
-    res.status(500).json({ error: "Database error" });
+    return res.status(500).json({ error: "Database error" });
   }
 });
 

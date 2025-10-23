@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/Container.css';
@@ -15,10 +15,11 @@ import {
   Visibility,
   VisibilityOff
 } from "@mui/icons-material";
-import SchoolImage from '../assets/image.png';
 import ReCAPTCHA from "react-google-recaptcha";
+import { SettingsContext } from "../App"; // ✅ Access settings from context
 
 const Register = () => {
+  const settings = useContext(SettingsContext); // ✅ Get settings data (bg_image, logo_url)
   const [capVal, setCapVal] = useState(null);
   const [usersData, setUserData] = useState({
     email: '',
@@ -75,11 +76,16 @@ const Register = () => {
     }
   });
 
+  // ✅ Use background from settings or fallback image
+  const backgroundImage = settings?.bg_image
+    ? `url(http://localhost:5000${settings.bg_image})`
+    : "url(/default-bg.jpg)";
+
   return (
     <>
       <Box
         sx={{
-          backgroundImage: `url(${SchoolImage})`,
+          backgroundImage,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
@@ -102,11 +108,18 @@ const Register = () => {
             <div className="Header">
               <div className="HeaderTitle">
                 <div className="CircleCon">
-                  <img src={Logo} alt="" />
+                  <img
+                    src={
+                      settings?.logo_url
+                        ? `http://localhost:5000${settings.logo_url}`
+                        : Logo
+                    }
+                    alt="Logo"
+                  />
                 </div>
               </div>
               <div className="HeaderBody">
-                <strong>EARIST</strong>
+                <strong>{settings?.company_name || "EARIST"}</strong>
                 <p>Student Information System</p>
               </div>
             </div>
@@ -203,7 +216,7 @@ const Register = () => {
 
             <div className="Footer">
               <div className="FooterText">
-                &copy; 2025 Student EARIST Information System. All rights reserved.
+                &copy; 2025 {settings?.company_name || "EARIST"} Student Information System. All rights reserved.
               </div>
             </div>
           </div>

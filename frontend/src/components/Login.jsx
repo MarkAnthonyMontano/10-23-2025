@@ -1,29 +1,37 @@
-import React, { useState } from "react";
-import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from "react";
+import axios from "axios";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Container,
-  Checkbox,
   Box,
   Snackbar,
-  Alert
+  Alert,
 } from "@mui/material";
 import {
   Email as EmailIcon,
   Lock as LockIcon,
   Visibility,
-  VisibilityOff
+  VisibilityOff,
 } from "@mui/icons-material";
-import '../styles/Container.css';
-import Logo from '../assets/Logo.png';
-import SchoolImage from '../assets/image.png';
+import "../styles/Container.css";
+import Logo from "../assets/Logo.png";
+import { SettingsContext } from "../App"; // ✅ Global settings
 
 const Login = ({ setIsAuthenticated }) => {
+  const settings = useContext(SettingsContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [snack, setSnack] = useState({ open: false, message: "", severity: "info" });
+  const [currentYear, setCurrentYear] = useState(""); // ✅ Dynamic year (Manila)
+  const navigate = useNavigate();
+
+  // ✅ Get year in Asia/Manila timezone
+  useEffect(() => {
+    const now = new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" });
+    const year = new Date(now).getFullYear();
+    setCurrentYear(year);
+  }, []);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -32,9 +40,11 @@ const Login = ({ setIsAuthenticated }) => {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/login_applicant", { email, password }, {
-        headers: { "Content-Type": "application/json" }
-      });
+      const response = await axios.post(
+        "http://localhost:5000/login_applicant",
+        { email, password },
+        { headers: { "Content-Type": "application/json" } }
+      );
 
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("email", response.data.email);
@@ -43,33 +53,32 @@ const Login = ({ setIsAuthenticated }) => {
 
       setIsAuthenticated(true);
       setSnack({ open: true, message: "Login Successfully", severity: "success" });
-
       navigate("/applicant_dashboard");
     } catch (error) {
       setSnack({
         open: true,
         message: error.response?.data?.message || "Invalid credentials",
-        severity: "error"
+        severity: "error",
       });
     }
   };
 
   const handleClose = (_, reason) => {
-    if (reason === 'clickaway') return;
-    setSnack(prev => ({ ...prev, open: false }));
+    if (reason === "clickaway") return;
+    setSnack((prev) => ({ ...prev, open: false }));
   };
 
-   // 🔒 Disable right-click
-  document.addEventListener('contextmenu', (e) => e.preventDefault());
-
-  // 🔒 Block DevTools shortcuts + Ctrl+P silently
-  document.addEventListener('keydown', (e) => {
+  // 🔒 Security: Disable right-click + DevTools shortcuts
+  document.addEventListener("contextmenu", (e) => e.preventDefault());
+  document.addEventListener("keydown", (e) => {
     const isBlockedKey =
-      e.key === 'F12' || // DevTools
-      e.key === 'F11' || // Fullscreen
-      (e.ctrlKey && e.shiftKey && (e.key.toLowerCase() === 'i' || e.key.toLowerCase() === 'j')) || // Ctrl+Shift+I/J
-      (e.ctrlKey && e.key.toLowerCase() === 'u') || // Ctrl+U (View Source)
-      (e.ctrlKey && e.key.toLowerCase() === 'p');   // Ctrl+P (Print)
+      e.key === "F12" ||
+      e.key === "F11" ||
+      (e.ctrlKey &&
+        e.shiftKey &&
+        (e.key.toLowerCase() === "i" || e.key.toLowerCase() === "j")) ||
+      (e.ctrlKey && e.key.toLowerCase() === "u") ||
+      (e.ctrlKey && e.key.toLowerCase() === "p");
 
     if (isBlockedKey) {
       e.preventDefault();
@@ -77,13 +86,21 @@ const Login = ({ setIsAuthenticated }) => {
     }
   });
 
+  // ✅ Dynamic background
+  const backgroundImage = settings?.bg_image
+    ? `url(http://localhost:5000${settings.bg_image})`
+    : "url(/default-bg.jpg)";
 
+  // ✅ Dynamic logo
+  const logoSrc = settings?.logo_url
+    ? `http://localhost:5000${settings.logo_url}`
+    : Logo;
 
   return (
     <>
       <Box
         sx={{
-          backgroundImage: `url(${SchoolImage})`,
+          backgroundImage,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
@@ -95,22 +112,28 @@ const Login = ({ setIsAuthenticated }) => {
         }}
       >
         <Container
-          style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
           maxWidth={false}
         >
           <div style={{ border: "5px solid white" }} className="Container">
+            {/* Header */}
             <div className="Header">
               <div className="HeaderTitle">
                 <div className="CircleCon">
-                  <img src={Logo} alt="" />
+                  <img src={logoSrc} alt="Logo" />
                 </div>
               </div>
               <div className="HeaderBody">
-                <strong>EARIST</strong>
+                <strong>{settings?.company_name || "EARIST"}</strong>
                 <p>Student Information System</p>
               </div>
             </div>
 
+            {/* Body */}
             <div className="Body">
               <div className="TextField" style={{ position: "relative" }}>
                 <label htmlFor="email">Email Address</label>
@@ -122,11 +145,7 @@ const Login = ({ setIsAuthenticated }) => {
                   className="border"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleLogin(); // ✅ Trigger login on Enter
-                    }
-                  }}
+                  onKeyDown={(e) => e.key === "Enter" && handleLogin()}
                   style={{ paddingLeft: "2.5rem" }}
                 />
                 <EmailIcon
@@ -134,12 +153,12 @@ const Login = ({ setIsAuthenticated }) => {
                     position: "absolute",
                     top: "2.5rem",
                     left: "0.7rem",
-                    color: "rgba(0,0,0,0.4)"
+                    color: "rgba(0,0,0,0.4)",
                   }}
                 />
               </div>
 
-              <div className="TextField" style={{ position: 'relative' }}>
+              <div className="TextField" style={{ position: "relative" }}>
                 <label htmlFor="password">Password</label>
                 <input
                   type={showPassword ? "text" : "password"}
@@ -148,11 +167,7 @@ const Login = ({ setIsAuthenticated }) => {
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleLogin(); 
-                    }
-                  }}
+                  onKeyDown={(e) => e.key === "Enter" && handleLogin()}
                   className="border"
                   style={{ paddingLeft: "2.5rem" }}
                 />
@@ -161,7 +176,7 @@ const Login = ({ setIsAuthenticated }) => {
                     position: "absolute",
                     top: "2.5rem",
                     left: "0.7rem",
-                    color: "rgba(0,0,0,0.4)"
+                    color: "rgba(0,0,0,0.4)",
                   }}
                 />
                 <button
@@ -175,32 +190,39 @@ const Login = ({ setIsAuthenticated }) => {
                     right: "1rem",
                     background: "none",
                     border: "none",
-                    cursor: "pointer"
+                    cursor: "pointer",
                   }}
                 >
                   {showPassword ? <Visibility /> : <VisibilityOff />}
                 </button>
               </div>
 
-           
-
               <div className="Button" onClick={handleLogin}>
                 <span>Log In</span>
               </div>
 
               <div className="LinkContainer">
-                <span><Link to="/applicant_forgot_password">Forgot your password</Link></span>
+                <span>
+                  <Link to="/applicant_forgot_password">Forgot your password</Link>
+                </span>
               </div>
 
-              <div className="LinkContainer RegistrationLink" style={{ margin: '0.1rem 0rem' }}>
+              <div
+                className="LinkContainer RegistrationLink"
+                style={{ margin: "0.1rem 0rem" }}
+              >
                 <p>Doesn't Have an Account?</p>
-                <span><Link to={'/register'}>Register Here</Link></span>
+                <span>
+                  <Link to={"/register"}>Register Here</Link>
+                </span>
               </div>
             </div>
 
+            {/* Footer with Manila Year */}
             <div className="Footer">
               <div className="FooterText">
-                &copy; 2025 EARIST Student Information System. All rights reserved.
+                &copy; {currentYear}{" "}
+                {settings?.company_name || "EARIST"} Student Information System. All rights reserved.
               </div>
             </div>
           </div>
@@ -211,9 +233,9 @@ const Login = ({ setIsAuthenticated }) => {
           open={snack.open}
           autoHideDuration={4000}
           onClose={handleClose}
-          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
         >
-          <Alert severity={snack.severity} onClose={handleClose} sx={{ width: '100%' }}>
+          <Alert severity={snack.severity} onClose={handleClose} sx={{ width: "100%" }}>
             {snack.message}
           </Alert>
         </Snackbar>

@@ -1,21 +1,66 @@
-import React from 'react';
+import React, { useContext } from "react";
+import { SettingsContext } from "../App"; // ✅ import your global context
 
 const Unauthorized = () => {
+    const settings = useContext(SettingsContext);
+
+    const backgroundImage = settings?.bg_image
+        ? `url(http://localhost:5000${settings.bg_image})`
+        : "linear-gradient(to right, #fafafa, #f5f5f5)"; // fallback color
+
     return (
-        <div 
+        <div
             style={{
                 display: "flex",
-                height: "100vh", // Full viewport height
+                height: "100vh",
                 width: "100%",
-                alignItems: "center", // Vertical center
-                justifyContent: "center", // Horizontal center
-                backgroundColor: "#f8f8f8" // Optional light background
+
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundImage,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                position: "relative",
             }}
         >
-            <div style={{ textAlign: 'center' }}>
-                <h1 style={{ color: "#b71c1c" }}>Unauthorized Access</h1>
-                <p>
-                    You do not have access to this page. <br />
+            {/* ✅ Frosted white blur overlay */}
+            <div
+                style={{
+                    position: "absolute",
+                    inset: 0,
+                    backgroundColor: "rgba(255, 255, 255, 0.4)",
+                    backdropFilter: "blur(1px)",
+                    WebkitBackdropFilter: "blur(1px)",
+                }}
+            ></div>
+
+            {/* ✅ Foreground content */}
+            <div
+                style={{
+                    position: "relative",
+                    zIndex: 1,
+                    textAlign: "center",
+                    backgroundColor: "rgba(255, 255, 255, 0.75)",
+                    padding: "40px 80px",
+                    borderRadius: "12px",
+                    boxShadow: "0 6px 20px rgba(0,0,0,0.15)",
+                    backdropFilter: "blur(5px)",
+                }}
+            >
+                <h1
+                    style={{
+                        color: "#b71c1c",
+                        fontWeight: "bold",
+                        fontSize: "2.5rem",
+                       
+                        marginBottom: "10px",
+                    }}
+                >
+                    UNATHORIZED ACCESS
+                </h1>
+                <p style={{ fontSize: "1rem", color: "#333" }}>
+                    You do not have access to this page.
+                    <br />
                     Please contact the administrator.
                 </p>
             </div>

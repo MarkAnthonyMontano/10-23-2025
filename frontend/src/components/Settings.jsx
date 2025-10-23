@@ -9,7 +9,6 @@ import {
     Paper,
     Box,
     Divider,
-    Avatar,
     Snackbar,
     Alert,
 } from "@mui/material";
@@ -19,12 +18,13 @@ function Settings({ onUpdate }) {
     const [companyName, setCompanyName] = useState("");
     const [address, setAddress] = useState("");
     const [logo, setLogo] = useState(null);
-    const [preview, setPreview] = useState(null);
+    const [previewLogo, setPreviewLogo] = useState(null);
+    const [bgImage, setBgImage] = useState(null);
+    const [previewBg, setPreviewBg] = useState(null);
     const [headerColor, setHeaderColor] = useState("#ffffff");
     const [footerText, setFooterText] = useState("");
     const [footerColor, setFooterColor] = useState("#ffffff");
 
-    // Snackbar state
     const [snack, setSnack] = useState({
         open: false,
         message: "",
@@ -44,13 +44,15 @@ function Settings({ onUpdate }) {
                     company_name,
                     address,
                     logo_url,
+                    bg_image,
                     header_color,
                     footer_text,
                     footer_color,
                 } = response.data;
                 setCompanyName(company_name || "");
                 setAddress(address || "");
-                setPreview(logo_url || null);
+                setPreviewLogo(logo_url ? `http://localhost:5000${logo_url}` : null);
+                setPreviewBg(bg_image ? `http://localhost:5000${bg_image}` : null);
                 setHeaderColor(header_color || "#ffffff");
                 setFooterText(footer_text || "");
                 setFooterColor(footer_color || "#ffffff");
@@ -70,7 +72,8 @@ function Settings({ onUpdate }) {
         const formData = new FormData();
         formData.append("company_name", companyName || "");
         formData.append("address", address || "");
-        formData.append("logo", logo);
+        if (logo) formData.append("logo", logo);
+        if (bgImage) formData.append("bg_image", bgImage);
         formData.append("header_color", headerColor || "#ffffff");
         formData.append("footer_text", footerText || "");
         formData.append("footer_color", footerColor || "#ffffff");
@@ -102,26 +105,32 @@ function Settings({ onUpdate }) {
     return (
         <Box
             sx={{
-                height: "calc(100vh - 120px)",
+                width: "100%",
+                height: "100vh", // ✅ full viewport height
                 display: "flex",
                 justifyContent: "center",
-                alignItems: "center",
+                alignItems: "flex-start",
                 backgroundColor: "transparent",
-                overflowY: "auto",
+                overflowY: "auto", // ✅ enables scroll inside this component
+                overflowX: "hidden",
+                padding: "40px 0", // top/bottom space so button not clipped
             }}
         >
             <Paper
                 elevation={6}
                 sx={{
-                    p: 2,
-                    width: 550,
+                    p: 3,
+                    width: "50%",
+                    maxWidth: "800px",
                     borderRadius: 4,
                     backgroundColor: "#fff",
                     border: "2px solid maroon",
                     boxShadow: "0px 4px 20px rgba(0,0,0,0.1)",
+                    mb: 12, // ✅ add some bottom space
                 }}
             >
-                <Box textAlign="center" mb={1}>
+
+                <Box textAlign="center" mb={2}>
                     <SettingsIcon
                         sx={{
                             fontSize: 80,
@@ -140,11 +149,11 @@ function Settings({ onUpdate }) {
                     </Typography>
                 </Box>
 
-                <Divider sx={{ mb: 1 }} />
+                <Divider sx={{ mb: 2 }} />
 
                 <form onSubmit={handleSubmit}>
                     {/* ✅ Company Name */}
-                    <Box mb={1}>
+                    <Box mb={2}>
                         <InputLabel>Company Name</InputLabel>
                         <TextField
                             value={companyName}
@@ -156,7 +165,7 @@ function Settings({ onUpdate }) {
                     </Box>
 
                     {/* ✅ Address */}
-                    <Box mb={1}>
+                    <Box mb={2}>
                         <InputLabel>Address</InputLabel>
                         <TextField
                             value={address}
@@ -175,27 +184,60 @@ function Settings({ onUpdate }) {
                             onChange={(e) => {
                                 const file = e.target.files[0];
                                 setLogo(file);
-                                setPreview(URL.createObjectURL(file));
+                                setPreviewLogo(URL.createObjectURL(file));
                             }}
                             fullWidth
                         />
-                        {preview && (
-                            <Avatar
-                                src={preview}
+                        {previewLogo && (
+                            <Box
+                                component="img"
+                                src={previewLogo}
                                 alt="Logo Preview"
                                 sx={{
-                                    width: 80,
-                                    height: 80,
+                                    width: "100px",
+                                    height: "100px",
                                     mt: 1,
                                     mx: "auto",
+                                    display: "block",
                                     border: "2px solid #1976d2",
+                                    borderRadius: "3px",
+                                    objectFit: "cover",
+                                }}
+                            />
+                        )}
+                    </Box>
+
+                    {/* ✅ Background Image Upload */}
+                    <Box mb={2}>
+                        <InputLabel>Background Image</InputLabel>
+                        <Input
+                            type="file"
+                            onChange={(e) => {
+                                const file = e.target.files[0];
+                                setBgImage(file);
+                                setPreviewBg(URL.createObjectURL(file));
+                            }}
+                            fullWidth
+                        />
+                        {previewBg && (
+                            <Box
+                                component="img"
+                                src={previewBg}
+                                alt="Background Preview"
+                                sx={{
+                                    width: "100%",
+                                    height: "180px",
+                                    mt: 1,
+                                    border: "2px solid #1976d2",
+                                    borderRadius: "3px",
+                                    objectFit: "cover",
                                 }}
                             />
                         )}
                     </Box>
 
                     {/* ✅ Header Color */}
-                    <Box mb={1}>
+                    <Box mb={2}>
                         <InputLabel>Header Color</InputLabel>
                         <Input
                             type="color"
@@ -207,7 +249,7 @@ function Settings({ onUpdate }) {
                     </Box>
 
                     {/* ✅ Footer Text */}
-                    <Box mb={1}>
+                    <Box mb={2}>
                         <InputLabel>Footer Text</InputLabel>
                         <TextField
                             value={footerText}
@@ -219,7 +261,7 @@ function Settings({ onUpdate }) {
                     </Box>
 
                     {/* ✅ Footer Color */}
-                    <Box mb={1}>
+                    <Box mb={2}>
                         <InputLabel>Footer Color</InputLabel>
                         <Input
                             type="color"

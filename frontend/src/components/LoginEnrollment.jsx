@@ -1,29 +1,29 @@
-import React, { useState } from "react";
-import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useRef, useEffect, useContext } from "react";
+import axios from "axios";
+import { useNavigate, Link } from "react-router-dom";
 import { Modal, TextField } from "@mui/material";
 import {
   Container,
-  Checkbox,
   Box,
   Typography,
   Button,
   Snackbar,
-  Alert
+  Alert,
 } from "@mui/material";
 import {
   Email as EmailIcon,
   Lock as LockIcon,
   Visibility,
-  VisibilityOff
+  VisibilityOff,
 } from "@mui/icons-material";
-import '../styles/Container.css';
-import Logo from '../assets/Logo.png';
-import SchoolImage from '../assets/image.png';
-import { useRef, useEffect } from "react";
+import "../styles/Container.css";
 import CloseIcon from "@mui/icons-material/Close";
+import Logo from "../assets/Logo.png";
+import { SettingsContext } from "../App"; // ✅ Global bg_image & logo
 
 const LoginEnrollment = ({ setIsAuthenticated }) => {
+  const settings = useContext(SettingsContext);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -35,16 +35,36 @@ const LoginEnrollment = ({ setIsAuthenticated }) => {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [lockout, setLockout] = useState(false);
   const [lockoutTimer, setLockoutTimer] = useState(0);
-
-
+  const [currentYear, setCurrentYear] = useState(""); // ✅ Dynamic year
   const navigate = useNavigate();
+  const otpInputRef = useRef(null);
+
+  // ✅ Get current year in Manila timezone
+  useEffect(() => {
+    const now = new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" });
+    const year = new Date(now).getFullYear();
+    setCurrentYear(year);
+  }, []);
+
+  // ✅ Dynamic assets
+  const backgroundImage = settings?.bg_image
+    ? `url(http://localhost:5000${settings.bg_image})`
+    : "linear-gradient(to right, #f5f5f5, #fafafa)";
+  const logoSrc = settings?.logo_url
+    ? `http://localhost:5000${settings.logo_url}`
+    : Logo;
+
   // ---------------- HANDLE LOGIN ----------------
   const handleLogin = async () => {
-    if (isLoggingIn || lockoutTimer > 0) return; // prevent spam clicks
+    if (isLoggingIn || lockoutTimer > 0) return;
     setIsLoggingIn(true);
 
     if (!email || !password) {
-      setSnack({ open: true, message: "Please fill in all fields", severity: "warning" });
+      setSnack({
+        open: true,
+        message: "Please fill in all fields",
+        severity: "warning",
+      });
       setIsLoggingIn(false);
       return;
     }
@@ -52,39 +72,32 @@ const LoginEnrollment = ({ setIsAuthenticated }) => {
     try {
       const res = await axios.post("http://localhost:5000/login", { email, password });
       setTempLoginData(res.data);
-
-      // ✅ Show OTP modal if login succeeds
       setShowOtpModal(true);
       startResendTimer();
-      setSnack({ open: true, message: "OTP sent to your email", severity: "success" });
-
+      setSnack({
+        open: true,
+        message: "OTP sent to your email",
+        severity: "success",
+      });
     } catch (error) {
       const msg = error.response?.data?.message || "Login failed";
       const remaining = error.response?.data?.remaining;
 
-      // Case 1: Wrong password but still has attempts left
       if (error.response?.status === 400 && remaining !== undefined) {
         setSnack({
           open: true,
-          message: msg, // backend already sends "Invalid password. You have X attempt(s) remaining."
+          message: msg,
           severity: "warning",
         });
-      }
-
-      // Case 2: Locked out after 3 attempts
-      else if (error.response?.status === 429) {
+      } else if (error.response?.status === 429) {
         setSnack({
           open: true,
-          message: msg, // backend sends "Too many failed attempts. Locked for 3 minutes."
+          message: msg,
           severity: "error",
         });
-
-        // Extract lock time from message (default 180s)
         const seconds = parseInt(msg.match(/\d+/)?.[0] || 180, 10);
         setLockout(true);
         setLockoutTimer(seconds);
-
-        // countdown timer
         const interval = setInterval(() => {
           setLockoutTimer((prev) => {
             if (prev <= 1) {
@@ -95,10 +108,7 @@ const LoginEnrollment = ({ setIsAuthenticated }) => {
             return prev - 1;
           });
         }, 1000);
-      }
-
-      // Case 3: Other errors
-      else {
+      } else {
         setSnack({
           open: true,
           message: msg,
@@ -118,30 +128,35 @@ const LoginEnrollment = ({ setIsAuthenticated }) => {
         otp,
       });
 
-      // ✅ Only after OTP success, reset attempts automatically (backend clears them)
       localStorage.setItem("token", tempLoginData.token);
       localStorage.setItem("email", tempLoginData.email);
       localStorage.setItem("role", tempLoginData.role);
       localStorage.setItem("person_id", tempLoginData.person_id);
       localStorage.setItem("department", tempLoginData.department || "");
-      
+
       setIsAuthenticated(true);
       setShowOtpModal(false);
 
       navigate(
-        tempLoginData.role === "registrar" ? "/registrar_dashboard"
-          : tempLoginData.role === "faculty" ? "/faculty_dashboard"
-            : "/student_dashboard"
+        tempLoginData.role === "registrar"
+          ? "/registrar_dashboard"
+          : tempLoginData.role === "faculty"
+          ? "/faculty_dashboard"
+          : "/student_dashboard"
       );
     } catch (err) {
-      setSnack({ open: true, message: err.response?.data?.message || "Invalid OTP", severity: "error" });
+      setSnack({
+        open: true,
+        message: err.response?.data?.message || "Invalid OTP",
+        severity: "error",
+      });
     }
   };
 
   const startResendTimer = () => {
     setResendTimer(300);
     const interval = setInterval(() => {
-      setResendTimer(prev => {
+      setResendTimer((prev) => {
         if (prev <= 1) {
           clearInterval(interval);
           return 0;
@@ -153,56 +168,52 @@ const LoginEnrollment = ({ setIsAuthenticated }) => {
 
   const resendOtp = async () => {
     try {
-      await axios.post("http://localhost:5000/request-otp", { email: tempLoginData.email });
-      setSnack({ open: true, message: "OTP resent to your email", severity: "success" });
+      await axios.post("http://localhost:5000/request-otp", {
+        email: tempLoginData.email,
+      });
+      setSnack({
+        open: true,
+        message: "OTP resent to your email",
+        severity: "success",
+      });
       startResendTimer();
     } catch (err) {
-      setSnack({ open: true, message: err.response?.data?.message || "Failed to resend OTP", severity: "error" });
-    }
-  };
-
-
-  const handleClose = (_, reason) => {
-    if (reason === 'clickaway') return;
-    setSnack(prev => ({ ...prev, open: false }));
-  };
-
-  const otpInputRef = useRef(null);
-
-  useEffect(() => {
-    if (showOtpModal) {
-      requestAnimationFrame(() => {
-        otpInputRef.current?.focus();
+      setSnack({
+        open: true,
+        message: err.response?.data?.message || "Failed to resend OTP",
+        severity: "error",
       });
     }
+  };
+
+  const handleClose = (_, reason) => {
+    if (reason === "clickaway") return;
+    setSnack((prev) => ({ ...prev, open: false }));
+  };
+
+  useEffect(() => {
+    if (showOtpModal) otpInputRef.current?.focus();
   }, [showOtpModal]);
 
-  // 🔒 Disable right-click
-  document.addEventListener('contextmenu', (e) => e.preventDefault());
-
-  // 🔒 Block DevTools shortcuts + Ctrl+P silently
-  document.addEventListener('keydown', (e) => {
+  // 🔒 Disable right-click & DevTools
+  document.addEventListener("contextmenu", (e) => e.preventDefault());
+  document.addEventListener("keydown", (e) => {
     const isBlockedKey =
-      e.key === 'F12' || // DevTools
-      e.key === 'F11' || // Fullscreen
-      (e.ctrlKey && e.shiftKey && (e.key.toLowerCase() === 'i' || e.key.toLowerCase() === 'j')) || // Ctrl+Shift+I/J
-      (e.ctrlKey && e.key.toLowerCase() === 'u') || // Ctrl+U (View Source)
-      (e.ctrlKey && e.key.toLowerCase() === 'p');   // Ctrl+P (Print)
-
+      e.key === "F12" ||
+      e.key === "F11" ||
+      (e.ctrlKey && e.shiftKey && ["i", "j"].includes(e.key.toLowerCase())) ||
+      (e.ctrlKey && ["u", "p"].includes(e.key.toLowerCase()));
     if (isBlockedKey) {
       e.preventDefault();
       e.stopPropagation();
     }
   });
 
-
-
   return (
     <>
-    
       <Box
         sx={{
-          backgroundImage: `url(${SchoolImage})`,
+          backgroundImage,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
@@ -214,18 +225,22 @@ const LoginEnrollment = ({ setIsAuthenticated }) => {
         }}
       >
         <Container
-          style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
           maxWidth={false}
         >
           <div style={{ border: "5px solid white" }} className="Container">
             <div className="Header">
               <div className="HeaderTitle">
                 <div className="CircleCon">
-                  <img src={Logo} alt="" />
+                  <img src={logoSrc} alt="Logo" />
                 </div>
               </div>
               <div className="HeaderBody">
-                <strong>EARIST</strong>
+                <strong>{settings?.company_name || "EARIST"}</strong>
                 <p>Student Information System</p>
               </div>
             </div>
@@ -255,7 +270,7 @@ const LoginEnrollment = ({ setIsAuthenticated }) => {
                       position: "absolute",
                       top: "2.5rem",
                       left: "0.7rem",
-                      color: "rgba(0,0,0,0.4)"
+                      color: "rgba(0,0,0,0.4)",
                     }}
                   />
                 </div>
@@ -277,7 +292,7 @@ const LoginEnrollment = ({ setIsAuthenticated }) => {
                       position: "absolute",
                       top: "2.5rem",
                       left: "0.7rem",
-                      color: "rgba(0,0,0,0.4)"
+                      color: "rgba(0,0,0,0.4)",
                     }}
                   />
                   <button
@@ -291,14 +306,12 @@ const LoginEnrollment = ({ setIsAuthenticated }) => {
                       right: "1rem",
                       background: "none",
                       border: "none",
-                      cursor: "pointer"
+                      cursor: "pointer",
                     }}
                   >
                     {showPassword ? <Visibility /> : <VisibilityOff />}
                   </button>
                 </div>
-
-            
 
                 <div className="Button" style={{ cursor: lockout ? "not-allowed" : "pointer" }}>
                   <button
@@ -315,37 +328,49 @@ const LoginEnrollment = ({ setIsAuthenticated }) => {
                       cursor: lockout || isLoggingIn ? "not-allowed" : "pointer",
                     }}
                   >
-                    {lockout ? `Locked (${lockoutTimer}s)` : isLoggingIn ? "Logging in..." : "Log In"}
+                    {lockout
+                      ? `Locked (${lockoutTimer}s)`
+                      : isLoggingIn
+                      ? "Logging in..."
+                      : "Log In"}
                   </button>
                 </div>
               </form>
 
               <div className="LinkContainer">
-                <span><Link to="/forgot_password">Forgot your password</Link></span>
+                <span>
+                  <Link to="/forgot_password">Forgot your password</Link>
+                </span>
               </div>
 
-              <div className="LinkContainer RegistrationLink" style={{ margin: '0.1rem 0rem' }}>
+              <div
+                className="LinkContainer RegistrationLink"
+                style={{ margin: "0.1rem 0rem" }}
+              >
                 <p>Doesn't Have an Account?</p>
-                <span><Link to={'/register'}>Register Here</Link></span>
+                <span>
+                  <Link to={"/register"}>Register Here</Link>
+                </span>
               </div>
             </div>
 
+            {/* ✅ Footer with Manila-based dynamic year */}
             <div className="Footer">
               <div className="FooterText">
-                &copy; 2025 EARIST Student Information System. All rights reserved.
+                &copy; {currentYear} {settings?.company_name || "EARIST"} Student Information System. All rights reserved.
               </div>
             </div>
           </div>
         </Container>
 
-        {/* Snackbar Notification */}
+        {/* Snackbar */}
         <Snackbar
           open={snack.open}
           autoHideDuration={4000}
           onClose={handleClose}
-          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
         >
-          <Alert severity={snack.severity} onClose={handleClose} sx={{ width: '100%' }}>
+          <Alert severity={snack.severity} onClose={handleClose} sx={{ width: "100%" }}>
             {snack.message}
           </Alert>
         </Snackbar>
@@ -365,7 +390,7 @@ const LoginEnrollment = ({ setIsAuthenticated }) => {
               width: 350,
               boxShadow: 24,
               textAlign: "center",
-              position: "relative"
+              position: "relative",
             }}
           >
             <button
@@ -384,13 +409,21 @@ const LoginEnrollment = ({ setIsAuthenticated }) => {
                 alignItems: "center",
                 justifyContent: "center",
                 cursor: "pointer",
-                fontSize: "18px"
+                fontSize: "18px",
               }}
             >
               <CloseIcon fontSize="small" />
             </button>
 
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", fontSize: "20px", color: "#6D2323" }}>
+            <Typography
+              variant="h6"
+              sx={{
+                mb: 2,
+                fontWeight: "bold",
+                fontSize: "20px",
+                color: "#6D2323",
+              }}
+            >
               Enter the 6-digit OTP
             </Typography>
 
@@ -443,7 +476,6 @@ const LoginEnrollment = ({ setIsAuthenticated }) => {
       </Box>
     </>
   );
-
 };
 
 export default LoginEnrollment;

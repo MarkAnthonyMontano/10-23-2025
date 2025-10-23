@@ -34,6 +34,7 @@ const StudentDashboard = () => {
     middle_name: '',
     last_name: '',
     profile_image: '',
+    student_status: '',
   });
   const [studentDetails, setStudent] = useState({
     program_description: '',
@@ -362,7 +363,7 @@ const StudentDashboard = () => {
                   <Typography variant="subtitle2" color="text.secondary">
                     Status
                   </Typography>
-                  <Typography fontWeight={500}>Regular</Typography>
+                  <Typography fontWeight={500}>{personData.student_status}</Typography>
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
                   <Typography variant="subtitle2" color="text.secondary">
@@ -827,4 +828,3 @@ const StudentDashboard = () => {
 };
 
 export default StudentDashboard;
-

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import {
   Snackbar,
@@ -12,11 +12,12 @@ import {
 import { Link } from "react-router-dom";
 import "../styles/Container.css";
 import Logo from "../assets/Logo.png";
-import SchoolImage from "../assets/image.png";
 import { Email } from "@mui/icons-material";
 import ReCAPTCHA from "react-google-recaptcha";
+import { SettingsContext } from "../App"; // ✅ import context for bg_image and logo
 
 const RegistrarForgotPassword = () => {
+  const settings = useContext(SettingsContext); // ✅ get settings data
   const [capVal, setCapVal] = useState(null);
   const [email, setEmail] = useState("");
   const [snack, setSnack] = useState({
@@ -24,9 +25,16 @@ const RegistrarForgotPassword = () => {
     message: "",
     severity: "info",
   });
-  const [loading, setLoading] = useState(false); // 🔹 NEW state
+  const [loading, setLoading] = useState(false);
+  const [currentYear, setCurrentYear] = useState(""); // ✅ year based on Manila time
 
-  // 🔹 Handle Reset Password
+  useEffect(() => {
+    // ✅ Get year based on Manila (GMT+8)
+    const now = new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" });
+    const year = new Date(now).getFullYear();
+    setCurrentYear(year);
+  }, []);
+
   const handleReset = async () => {
     if (!email) {
       setSnack({
@@ -46,7 +54,7 @@ const RegistrarForgotPassword = () => {
       return;
     }
 
-    if (loading) return; // ⛔ Prevent double click
+    if (loading) return;
     setLoading(true);
 
     try {
@@ -65,11 +73,11 @@ const RegistrarForgotPassword = () => {
         severity: "error",
       });
     } finally {
-      setLoading(false); // ✅ Re-enable after request finishes
+      setLoading(false);
     }
   };
 
-  // 🔒 Disable right-click & devtools keys
+  // 🔒 Disable right-click & DevTools shortcuts
   useEffect(() => {
     const handleContextMenu = (e) => e.preventDefault();
     const handleKeyDown = (e) => {
@@ -93,7 +101,6 @@ const RegistrarForgotPassword = () => {
     };
   }, []);
 
-  // 🔹 Close Snackbar
   const handleClose = (_, reason) => {
     if (reason === "clickaway") return;
     setSnack((prev) => ({ ...prev, open: false }));
@@ -101,10 +108,19 @@ const RegistrarForgotPassword = () => {
 
   const isButtonDisabled = !email || !capVal || loading;
 
+  // ✅ use dynamic background and logo from settings
+  const backgroundImage = settings?.bg_image
+    ? `url(http://localhost:5000${settings.bg_image})`
+    : "url(/default-bg.jpg)";
+
+  const logoSrc = settings?.logo_url
+    ? `http://localhost:5000${settings.logo_url}`
+    : Logo;
+
   return (
     <Box
       sx={{
-        backgroundImage: `url(${SchoolImage})`,
+        backgroundImage,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
@@ -124,11 +140,11 @@ const RegistrarForgotPassword = () => {
           <div className="Header">
             <div className="HeaderTitle">
               <div className="CircleCon">
-                <img src={Logo} alt="EARIST Logo" />
+                <img src={logoSrc} alt="EARIST Logo" />
               </div>
             </div>
             <div className="HeaderBody">
-              <strong>EARIST</strong>
+              <strong>{settings?.company_name || "EARIST"}</strong>
               <p>Student Information System</p>
             </div>
           </div>
@@ -202,7 +218,8 @@ const RegistrarForgotPassword = () => {
           {/* Footer */}
           <div className="Footer">
             <div className="FooterText">
-              &copy; 2025 Student EARIST Information System. All rights reserved.
+              &copy; {currentYear}{" "}
+              {settings?.company_name || "EARIST"} Student Information System. All rights reserved.
             </div>
           </div>
         </div>
